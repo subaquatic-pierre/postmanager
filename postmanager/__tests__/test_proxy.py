@@ -2,8 +2,8 @@ import json
 from unittest import TestCase
 from unittest.mock import MagicMock
 
-from proxy import MockBucketProxy
-from utils import BUCKET_NAME, BUCKET_ROOT_DIR
+from postmanager.proxy import MockBucketProxy
+from postmanager.utils import BUCKET_NAME, BUCKET_ROOT_DIR
 
 
 class BucketProxyTest(TestCase):

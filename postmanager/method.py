@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
-from event import Event
-from manager import PostManager
-from meta import PostMeta
-from post import Post
+from postmanager.event import Event
+from postmanager.manager import PostManager
+from postmanager.meta import PostMeta
+from postmanager.post import Post
 
 
 class Method(ABC):

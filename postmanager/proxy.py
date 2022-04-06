@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
 from unittest.mock import MagicMock
 import json
-from config import setup_client
+from postmanager.config import setup_client
 
 
-from exception import BucketProxyException
+from postmanager.exception import BucketProxyException
 
 
 class BucketProxyBase(ABC):

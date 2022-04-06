@@ -1,12 +1,12 @@
 from unittest import TestCase
 from unittest.mock import MagicMock, call
 
-from manager import PostManager
-from post import Post
-from meta import PostMeta
-from exception import BucketProxyException
+from postmanager.manager import PostManager
+from postmanager.post import Post
+from postmanager.meta import PostMeta
+from postmanager.exception import BucketProxyException
 
-from utils import BUCKET_NAME, BUCKET_ROOT_DIR
+from postmanager.utils import BUCKET_NAME, BUCKET_ROOT_DIR
 
 
 class TestPostManager(TestCase):

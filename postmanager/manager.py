@@ -1,10 +1,10 @@
 from time import time
-from meta import PostMeta
-from post import Post
-from event import Event
-from proxy import BucketProxy, MockBucketProxy, BucketProxyBase
-from exception import BucketProxyException, PostManagerException
-from utils import BUCKET_NAME
+from postmanager.meta import PostMeta
+from postmanager.post import Post
+from postmanager.event import Event
+from postmanager.proxy import BucketProxy, MockBucketProxy, BucketProxyBase
+from postmanager.exception import BucketProxyException, PostManagerException
+from postmanager.utils import BUCKET_NAME
 
 
 class PostManager:

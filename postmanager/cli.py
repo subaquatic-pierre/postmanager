@@ -1,6 +1,6 @@
 import sys
-from utils import create_event_and_context, print_response
-from http_methods import get, list, post, put, delete
+from postmanager.utils import create_event_and_context, print_response
+from postmanager.http_methods import get, list, post, put, delete
 
 
 def run_api(method_list, post_id=0):

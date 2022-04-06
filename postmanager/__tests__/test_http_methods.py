@@ -1,7 +1,7 @@
 import json
 from unittest import TestCase
-from utils import create_event_and_context
-from http_methods import get, list, post
+from postmanager.http_methods import get, list, post
+from postmanager.utils import create_event_and_context
 
 
 class TestHttpMethods(TestCase):

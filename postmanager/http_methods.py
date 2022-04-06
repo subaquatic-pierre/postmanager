@@ -1,8 +1,8 @@
 import json
-from manager import PostManager
-from event import Event
-from response import Response
-from method import (
+from postmanager.manager import PostManager
+from postmanager.event import Event
+from postmanager.response import Response
+from postmanager.method import (
     DeleteMethod,
     GetMethod,
     ListMethod,
