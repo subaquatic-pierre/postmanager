@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="postmanager",
-    version="0.1.0",
+    version="0.1.1",
     description="Post manager for AWS S3 bucket storage",
     url="https://github.com/subaquatic-pierre/s3-postmanager",
     author="Pierre du Toit",
