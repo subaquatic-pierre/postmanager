@@ -20,14 +20,21 @@ class TestPostManager(TestCase):
         bucket_proxy = MagicMock()
         blog_manager = PostManager(bucket_proxy, "Blog")
 
-        blog_manager.bucket_proxy.get_json.assert_called_with("index.json")
+        expected_calls = [call("index.json"), call("latest_id.json")]
+        call_list = blog_manager.bucket_proxy.get_json.call_args_list
+        self.assertEqual(call_list, expected_calls)
 
     def test_manager_init_setup(self):
         bucket_proxy = MagicMock()
         bucket_proxy.get_json.side_effect = BucketProxyException()
         blog_manager = PostManager(bucket_proxy, "Blog")
 
-        blog_manager.bucket_proxy.save_json.assert_called_with([], "index.json")
+        expected_calls = [
+            call([], "index.json"),
+            call({"latest_id": 0}, "latest_id.json"),
+        ]
+        call_list = blog_manager.bucket_proxy.save_json.call_args_list
+        self.assertEqual(call_list, expected_calls)
 
     def test_get_index(self):
         self.bucket_proxy.get_json.return_value = []
@@ -42,12 +49,12 @@ class TestPostManager(TestCase):
         self.assertTrue(self.blog_manager.bucket_proxy.list_dir.called)
         self.assertIsInstance(all_posts, list)
 
-    def test_get_latest_id(self):
-        self.bucket_proxy.get_json.return_value = ["first", "second"]
-        latest_id = self.blog_manager._get_latest_id()
+    def test_get_new_id(self):
+        self.bucket_proxy.get_json.return_value = {"latest_id": 42}
+        latest_id = self.blog_manager.get_new_id()
 
-        self.bucket_proxy.get_json.assert_called_with("index.json")
-        self.assertEqual(latest_id, 2)
+        self.bucket_proxy.get_json.assert_called_with("latest_id.json")
+        self.assertEqual(latest_id, 42)
 
     def test_get_json(self):
         filename = "filename.txt"
