@@ -1,7 +1,6 @@
 class PostMeta:
-    def __init__(self, id, title, attrs) -> None:
+    def __init__(self, id, attrs) -> None:
         self.id = id
-        self.title = title
         self._attrs_list = []
         self._init_attrs(attrs)
 
@@ -13,8 +12,8 @@ class PostMeta:
 
         return data
 
-    def update_meta(self, attrs):
-        for key, value in attrs.items():
+    def update(self, meta_dict:dict):
+        for key, value in meta_dict.items():
             # Never update id
             if key == "id":
                 continue
@@ -25,22 +24,15 @@ class PostMeta:
             self._attrs_list.append(key)
 
         for key, value in attrs.items():
-            if key == "id" or key == "title":
+            if key == "id":
                 continue
             else:
                 setattr(self, key, value)
 
     @staticmethod
-    def from_json(attrs: dict):
-        title = attrs.get("title", None)
-        id = attrs.get("id", None)
+    def from_json(meta_dict: dict):
+        assert meta_dict.get('id') != None, "meta_dict object must contain an ID key"
 
-        if title == None:
-            raise Exception("attrs object must have 'title' key")
-
-        if id == None:
-            raise Exception("attrs object must have 'id' key")
-
-        post_meta = PostMeta(id, title, attrs)
+        post_meta = PostMeta(meta_dict.get('id'), meta_dict)
 
         return post_meta

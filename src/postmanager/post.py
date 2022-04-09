@@ -15,11 +15,17 @@ class Post:
 
     @property
     def title(self):
-        return self.meta_data.title
+        try:
+            return self.meta_data.title
+        except:
+            return 'No title found'
 
     @title.setter
     def title(self, title):
-        self.meta_data.title = title
+        try:
+            self.meta_data.title = title
+        except:
+            pass
 
     @property
     def content(self):
