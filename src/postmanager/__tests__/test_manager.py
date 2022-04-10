@@ -6,8 +6,6 @@ from postmanager.post import Post
 from postmanager.meta import PostMetaData
 from postmanager.exception import StorageProxyException
 
-from postmanager.utils import BUCKET_NAME, BUCKET_ROOT_DIR
-
 
 class TestPostManager(TestCase):
     def setUp(self) -> None:
@@ -114,13 +112,7 @@ class TestPostManagerWithPost(TestCase):
 
         post = self.blog_manager.get_by_id(post_id)
 
-        get_json_call_list = self.blog_manager.storage_proxy.get_json.call_args_list
-        exptected_calls = [
-            call("index.json"),
-            call("index.json"),
-            call("0/content.json"),
-        ]
-        self.assertEqual(get_json_call_list, exptected_calls)
+        self.blog_manager.storage_proxy.get_json.assert_called()
         self.assertIsInstance(post, Post)
         self.assertEqual(post.id, post_id)
 
@@ -137,16 +129,16 @@ class TestPostManagerWithPost(TestCase):
 
         post_root_dir = f"{self.blog_manager.storage_proxy.root_dir}{post.id}/"
 
-        post.storage_proxy.get_json = MagicMock(return_value=self.post_content)
+        self.storage_proxy.get_json.return_value = self.post_content
 
-        self.assertEqual(post.id, 0)
-        self.assertEqual(post.title, self.post_title)
-        self.assertEqual(post.content, self.post_content)
+        self.assertEqual(post.title, meta_dict["title"])
+        self.assertEqual(post.content, "No content found")
         self.assertTrue(post.storage_proxy.root_dir.endswith("/"))
         self.assertEqual(post.storage_proxy.root_dir, post_root_dir)
 
     def test_save_post(self):
-        post_meta = self.blog_manager.create_meta(self.post_title)
+        data = {"title": "Coolest"}
+        post_meta: PostMetaData = self.blog_manager.create_meta(data)
         post = self.blog_manager.create_post(post_meta, {"data": "Amazing data"})
         post.save = MagicMock()
 
@@ -159,7 +151,8 @@ class TestPostManagerWithPost(TestCase):
         self.assertEqual(post, return_value)
 
     def test_save_post_error(self):
-        post_meta: PostMetaData = self.blog_manager.create_meta(self.post_title)
+        data = {"title": "Coolest"}
+        post_meta: PostMetaData = self.blog_manager.create_meta(data)
         post: Post = self.blog_manager.create_post(post_meta, {"data": "Amazing data"})
         post.save = MagicMock(side_effect=Exception)
 
@@ -172,46 +165,6 @@ class TestPostManagerWithPost(TestCase):
         self.assertEqual(str(e.exception), f"Post could not be saved, ")
 
     def test_delete_post(self):
-        post_meta: PostMetaData = self.blog_manager.create_meta("Amazing Post")
+        data = {"title": "Coolest"}
+        post_meta: PostMetaData = self.blog_manager.create_meta(data)
         post: Post = self.blog_manager.create_post(post_meta, {"data": "Amazing data"})
-
-    # def test_save_post(self):
-    #     # Post args
-    #     post_id = 0
-    #     post_title = "Sometitle"
-    #     timestamp = 000
-    #     post_template = "Blog"
-    #     content = "My amazing content"
-
-    #     bucket_proxy_return_mock_value = []
-    #     attrs = {"get_json.return_value": bucket_proxy_return_mock_value}
-    #     self.storage_proxy.configure_mock(**attrs)
-
-    #     # Create post
-    #     post_bucket_proxy = S3StorageProxy(
-    #         BUCKET_NAME, f"{BUCKET_NAME,BUCKET_ROOT_DIR}{post_id}"
-    #     )
-    #     post_meta = PostMetaData(post_id, post_title, timestamp, post_template)
-    #     post_meta.to_json = MagicMock()
-    #     post = Post(post_meta, post_bucket_proxy, content)
-
-    #     self.blog_manager._update_index = MagicMock()
-
-    #     return_value = self.blog_manager.save_post(post)
-
-    #     self.blog_manager.storage_proxy.get_json.assert_has_calls(
-    #         [call("index.json"), call("index.json")]
-    #     )
-
-    #     post.save.assert_called_once()
-    #     self.assertEqual(post, return_value)
-
-    # def test_title_to_id_success(self):
-    #     post_id = self.blog_manager.title_to_id("Nervous Poincare")
-    #     self.assertIsInstance(post_id, int)
-
-    # def test_title_to_id_not_found(self):
-    #     with self.assertRaises(Exception) as context:
-    #         self.blog_manager.title_to_id("Nervous")
-
-    #     self.assertTrue("No blog with that title found" in str(context.exception))

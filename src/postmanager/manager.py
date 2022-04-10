@@ -153,7 +153,8 @@ class PostManager:
 
     # Static methods
     @staticmethod
-    def setup_api_post_manager(event: Event):
+    def setup_s3_with_event(event: Event):
+        bucket_name = event.bucket_name
         path = event.path
         testing = event.testing
         mock_config = event.mock_config
@@ -161,13 +162,13 @@ class PostManager:
 
         if testing:
             storage_proxy = MockS3StorageProxy(
-                bucket_name=BUCKET_NAME,
+                bucket_name=bucket_name,
                 root_dir=f"{template}/",
                 mock_config=mock_config,
             )
         else:
             storage_proxy = S3StorageProxy(
-                bucket_name=BUCKET_NAME,
+                bucket_name=bucket_name,
                 root_dir=f"{template}/",
             )
 
@@ -176,11 +177,11 @@ class PostManager:
         return post_manager
 
     @staticmethod
-    def setup(bucket_name: str, template: str = "post"):
+    def setup_s3(bucket_name: str, template: str = "post"):
         storage_proxy = S3StorageProxy(
             bucket_name=bucket_name,
             root_dir=f"{template}/",
         )
 
-        post_manager = PostManager(storage_proxy, template)
+        post_manager = PostManager(storage_proxy)
         return post_manager

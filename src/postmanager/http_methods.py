@@ -10,19 +10,26 @@ from postmanager.method import (
     PutMethod,
 )
 
+BUCKET_NAME = "serverless-blog-contents"
+
+
+def setup_event(event):
+    event["bucket_name"] = BUCKET_NAME
+    return Event(event)
+
 
 def format_error_message(message, e):
     return f'{message}. {getattr(e, "message", str(e))}'
 
 
 def list(event, context):
-    request_event = Event(event)
+    request_event = setup_event(event)
 
     if request_event.error_message:
         response = Response(error_message=request_event.error_message)
         return response.format()
 
-    post_manager = PostManager.setup_api_post_manager(request_event)
+    post_manager = PostManager.setup_s3_with_event(request_event)
 
     method = ListMethod(request_event, post_manager)
 
@@ -34,13 +41,13 @@ def list(event, context):
 
 
 def get(event, context):
-    request_event = Event(event)
+    request_event = setup_event(event)
 
     if request_event.error_message:
         response = Response(error_message=request_event.error_message)
         return response.format()
 
-    post_manager = PostManager.setup_api_post_manager(request_event)
+    post_manager = PostManager.setup_s3_with_event(request_event)
 
     method = GetMethod(request_event, post_manager)
 
@@ -52,13 +59,13 @@ def get(event, context):
 
 
 def post(event, context):
-    request_event = Event(event)
+    request_event = setup_event(event)
 
     if request_event.error_message:
         response = Response(error_message=request_event.error_message)
         return response.format()
 
-    post_manager = PostManager.setup_api_post_manager(request_event)
+    post_manager = PostManager.setup_s3_with_event(request_event)
 
     method = PostMethod(request_event, post_manager)
 
@@ -70,13 +77,13 @@ def post(event, context):
 
 
 def delete(event, context):
-    request_event = Event(event)
+    request_event = setup_event(event)
 
     if request_event.error_message:
         response = Response(error_message=request_event.error_message)
         return response.format()
 
-    post_manager = PostManager.setup_api_post_manager(request_event)
+    post_manager = PostManager.setup_s3_with_event(request_event)
 
     method = DeleteMethod(request_event, post_manager)
 
@@ -88,13 +95,13 @@ def delete(event, context):
 
 
 def put(event, context):
-    request_event = Event(event)
+    request_event = setup_event(event)
 
     if request_event.error_message:
         response = Response(error_message=request_event.error_message)
         return response.format()
 
-    post_manager = PostManager.setup_api_post_manager(request_event)
+    post_manager = PostManager.setup_s3_with_event(request_event)
 
     method = PutMethod(request_event, post_manager)
 

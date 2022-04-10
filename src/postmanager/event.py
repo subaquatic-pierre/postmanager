@@ -6,6 +6,7 @@ class Event:
         self.event = event
         self.body = self._parse_body()
         self.path = self._parse_event_param("path", "")
+        self.bucket_name = self._parse_event_param("bucket_name", "default-s3-bucket")
         self.testing = self._parse_event_param("test_api")
         self.mock_config = self._parse_event_param("path")
         self.headers = self._parse_event_param("headers")
