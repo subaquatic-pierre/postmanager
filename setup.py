@@ -7,7 +7,7 @@ setuptools.setup(
     name="postmanager",
     version="0.1.1",
     description="Post manager for AWS S3 bucket storage",
-    url="https://github.com/subaquatic-pierre/s3-postmanager",
+    url="https://github.com/subaquatic-pierre/postmanager",
     author="Pierre du Toit",
     author_email="subaquatic-pierre@gmail.com",
     project_urls={

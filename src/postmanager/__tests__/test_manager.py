@@ -125,13 +125,14 @@ class TestPostManagerWithPost(TestCase):
         self.assertEqual(post.id, post_id)
 
     def test_create_meta_from_json(self):
-        title = "Awesome Title"
-        meta = self.blog_manager.create_meta(title)
+        meta_dict = {"title": "Awesome Title"}
+        meta = self.blog_manager.create_meta(meta_dict)
 
-        self.assertEqual(meta.title, title)
+        self.assertEqual(meta.title, meta_dict.get("title"))
 
     def test_create_post(self):
-        post_meta = self.blog_manager.create_meta(self.post_title)
+        meta_dict = {"title": "Awesome Title"}
+        post_meta = self.blog_manager.create_meta(meta_dict)
         post = self.blog_manager.create_post(post_meta, self.post_content)
 
         post_root_dir = f"{self.blog_manager.bucket_proxy.root_dir}{post.id}/"

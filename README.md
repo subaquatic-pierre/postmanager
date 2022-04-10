@@ -12,4 +12,4 @@ The project can be imported into a REST API to manage all CRUD operations associ
 
 An example flask project can be found at this repo:
 
-<https://github.com/subaquatic-pierre/s3-postmanager-flask-example>
+<https://github.com/subaquatic-pierre/postmanager-flask-example>
