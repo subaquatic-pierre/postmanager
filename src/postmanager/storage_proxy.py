@@ -46,9 +46,6 @@ class S3StorageProxyBase(StorageProxyBase):
 
     def save_json(self, body: dict, filename: str):
         try:
-            # self.storage_interface.put_object(
-            #     Bucket=self.bucket_name, Key=self.root_dir
-            # )
             self.storage_interface.put_object(
                 Bucket=self.bucket_name,
                 Key=f"{self.root_dir}{filename}",

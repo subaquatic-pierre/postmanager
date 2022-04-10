@@ -22,8 +22,7 @@ class StorageProxyTest(TestCase):
         body = {}
         self.bucket.save_json(body, filename)
 
-        call_count = self.bucket.storage_interface.put_object.call_count
-        self.assertEqual(call_count, 2)
+        self.bucket.storage_interface.put_object.assert_called()
 
         self.bucket.storage_interface.put_object.assert_called_with(
             Bucket=self.bucket.bucket_name,
@@ -73,8 +72,10 @@ class StorageProxyTest(TestCase):
         filename = "something.jpg"
         self.bucket.save_bytes(body, filename)
 
-        call_count = self.bucket.storage_interface.put_object.call_count
+        self.bucket.storage_interface.put_object.assert_called()
 
         self.bucket.storage_interface.put_object.assert_called_with(
-            Key=f"{self.bucket.root_dir}{filename}", Body=body
+            Key=f"{self.bucket.root_dir}{filename}",
+            Body=body,
+            Bucket=self.bucket.bucket_name,
         )

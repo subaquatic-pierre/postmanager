@@ -131,8 +131,8 @@ class TestPostManagerWithPost(TestCase):
 
         self.storage_proxy.get_json.return_value = self.post_content
 
-        self.assertEqual(post.title, meta_dict["title"])
-        self.assertEqual(post.content, "No content found")
+        self.assertEqual(post.meta_data.title, meta_dict["title"])
+        self.assertEqual(post.content, "")
         self.assertTrue(post.storage_proxy.root_dir.endswith("/"))
         self.assertEqual(post.storage_proxy.root_dir, post_root_dir)
 

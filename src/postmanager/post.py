@@ -16,45 +16,52 @@ class Post:
         self.id = meta_data.id
         self.storage_proxy = storage_proxy
         self.meta_data = meta_data
-        self._content = content
+        self.content = content
         self.cover_image: bytes = cover_image
 
-    @property
-    def title(self):
-        try:
-            return self.meta_data.title
-        except:
-            return "No title found"
+        self.image_map = {}
+        self._unsaved_images = {}
 
-    @title.setter
-    def title(self, title):
-        try:
-            self.meta_data.title = title
-        except:
-            pass
-
-    @property
-    def content(self):
-        try:
-            self._content = self.storage_proxy.get_json("content.json")
-            return self._content
-        except Exception:
-            return "No content found"
-
-    @content.setter
-    def content(self, content):
-        self._content = content
+        # Init data from storage
+        self._init_post_data()
 
     def save(self):
         # Save content
         self.storage_proxy.save_bytes(b"", "images/")
+
         # Save meta
         self.storage_proxy.save_json(self.meta_data.to_json(), "meta.json")
+
+        # Save content
         self.storage_proxy.save_json(self._content, "content.json")
 
         # Save images, for image in images
         if self.cover_image:
             self.storage_proxy.save_bytes(self.cover_image, f"images/cover_image.jpg")
+
+        # Save unsaved images
+        if self._unsaved_images:
+            for image_name, byte_str in self._unsaved_images.items():
+                image_key = f"images/{image_name}.jpg"
+
+                # Save image
+                self.storage_proxy.save_bytes(byte_str, image_key)
+                self.image_map[image_name] = image_key
+
+                # Reset unsaved images
+                self._unsaved_images = {}
+
+            # Update image_index
+            self.storage_proxy.save_json(self.image_map, "images/image_index.json")
+
+    def add_image(self, byte_str, image_name):
+        self._unsaved_images[image_name] = byte_str
+
+    def remove_image(self, image_name):
+        try:
+            del self._unsaved_images[image_name]
+        except:
+            return "Image does not exist"
 
     def list_image_urls(self):
         image_keys = self.storage_proxy.list_dir(f"images/")
@@ -70,7 +77,26 @@ class Post:
             "meta_data": self.meta_data.to_json(),
             "content": self.content,
             "images": {"cover_image": self.get_cover_image()},
+            "image_map": self.image_map,
         }
+
+    def get_image(self, image_name, format="str"):
+        try:
+            image_key = self.image_map[image_name]
+
+            byte_str = self.storage_proxy.get_bytes(image_key)
+            base64_image = byte_str.decode("utf-8")
+
+            if format == "bytes":
+                byte_str
+
+            elif format == "str":
+                return base64_image
+
+            return base64_image
+
+        except StorageProxyException:
+            return ""
 
     def get_cover_image(self, format="str") -> str:
         try:
@@ -90,6 +116,26 @@ class Post:
 
     def _base_image_url(self):
         return f"https://{self.storage_proxy.bucket_name}.s3.amazonaws.com/"
+
+    def _init_images(self):
+        try:
+            data = self.storage_proxy.get_json(f"images/image_index.json")
+            self.image_map = data
+
+        except StorageProxyException:
+            self.image_map = {}
+
+    def _init_content(self):
+        try:
+            data = self.storage_proxy.get_json(f"content.json")
+            self.content = data
+
+        except StorageProxyException:
+            self.content = ""
+
+    def _init_post_data(self):
+        self._init_images()
+        self._init_content()
 
     def __str__(self):
         return json.dumps(self.meta_data.to_json(), indent=2)
