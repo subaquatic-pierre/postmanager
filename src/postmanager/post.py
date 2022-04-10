@@ -1,6 +1,8 @@
 import json
+import base64
 from postmanager.storage_proxy import StorageProxyBase
 from postmanager.meta import PostMetaData
+from postmanager.exception import StorageProxyException
 
 
 class Post:
@@ -9,13 +11,13 @@ class Post:
         storage_proxy: StorageProxyBase,
         meta_data: PostMetaData,
         content="",
-        image=None,
+        cover_image="",
     ) -> None:
         self.id = meta_data.id
         self.storage_proxy = storage_proxy
         self.meta_data = meta_data
         self._content = content
-        self.image = image
+        self.cover_image: bytes = cover_image
 
     @property
     def title(self):
@@ -45,14 +47,14 @@ class Post:
 
     def save(self):
         # Save content
-        self.storage_proxy.save_json("", "images/")
+        self.storage_proxy.save_bytes(b"", "images/")
         # Save meta
         self.storage_proxy.save_json(self.meta_data.to_json(), "meta.json")
         self.storage_proxy.save_json(self._content, "content.json")
 
         # Save images, for image in images
-        if self.image != None:
-            self.storage_proxy.save_bytes(self.image, f"images/template.jpg")
+        if self.cover_image:
+            self.storage_proxy.save_bytes(self.cover_image, f"images/cover_image.jpg")
 
     def list_image_urls(self):
         image_keys = self.storage_proxy.list_dir(f"images/")
@@ -63,7 +65,28 @@ class Post:
         return self.storage_proxy.list_dir()
 
     def to_json(self):
-        return {"meta_data": self.meta_data.to_json(), "content": self.content}
+
+        return {
+            "meta_data": self.meta_data.to_json(),
+            "content": self.content,
+            "images": {"cover_image": self.get_cover_image()},
+        }
+
+    def get_cover_image(self, format="str") -> str:
+        try:
+            byte_str = self.storage_proxy.get_bytes(f"images/cover_image.jpg")
+            base64_image = byte_str.decode("utf-8")
+
+            if format == "bytes":
+                byte_str
+
+            elif format == "str":
+                return base64_image
+
+            return base64_image
+
+        except StorageProxyException:
+            return ""
 
     def _base_image_url(self):
         return f"https://{self.storage_proxy.bucket_name}.s3.amazonaws.com/"

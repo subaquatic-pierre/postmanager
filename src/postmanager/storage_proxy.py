@@ -46,9 +46,9 @@ class S3StorageProxyBase(StorageProxyBase):
 
     def save_json(self, body: dict, filename: str):
         try:
-            self.storage_interface.put_object(
-                Bucket=self.bucket_name, Key=self.root_dir
-            )
+            # self.storage_interface.put_object(
+            #     Bucket=self.bucket_name, Key=self.root_dir
+            # )
             self.storage_interface.put_object(
                 Bucket=self.bucket_name,
                 Key=f"{self.root_dir}{filename}",
@@ -60,14 +60,24 @@ class S3StorageProxyBase(StorageProxyBase):
     def save_bytes(self, body: bytes, filename: str):
         try:
             self.storage_interface.put_object(
+                Bucket=self.bucket_name,
                 Key=f"{self.root_dir}{filename}",
                 Body=body,
             )
         except Exception as e:
             raise StorageProxyException(f"Error saving bytes to bucket. {str(e)}")
 
-    def get_bytes(self, *args, **kwargs):
-        pass
+    def get_bytes(self, filename: str):
+        try:
+            object = self.storage_interface.get_object(
+                Bucket=self.bucket_name, Key=f"{self.root_dir}{filename}"
+            )
+
+            object_bytes = object["Body"].read()
+            return object_bytes
+
+        except Exception as e:
+            raise StorageProxyException(f"Error fething Bytes from bucket. {str(e)}")
 
     # Extra S3 specific methods
 
