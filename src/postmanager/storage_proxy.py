@@ -4,49 +4,86 @@ import json
 from postmanager.config import setup_client
 
 
-from postmanager.exception import BucketProxyException
+from postmanager.exception import StorageProxyException
 
 
 class StorageProxyBase(ABC):
+    @abstractmethod
+    def get_json(self, *args, **kwargs):
+        pass
+
+    @abstractmethod
+    def save_json(self, *args, **kwargs):
+        pass
+
+    @abstractmethod
+    def save_bytes(self, *args, **kwargs):
+        pass
+
+    @abstractmethod
+    def get_bytes(self, *args, **kwargs):
+        pass
+
+
+class S3StorageProxyBase(StorageProxyBase):
     def __init__(self, bucket_name, root_dir) -> None:
         self.bucket_name = bucket_name
         self.root_dir = root_dir
+        self._verify_root_dir()
+
+    # Required interface methods
 
     def get_json(self, filename):
         try:
-            object = self.bucket_interface.get_object(
+            object = self.storage_interface.get_object(
                 Bucket=self.bucket_name, Key=f"{self.root_dir}{filename}"
             )
 
             object_json = json.loads(object["Body"].read())
             return object_json
         except Exception as e:
-            raise BucketProxyException(f"Error fething JSON from bucket. {str(e)}")
+            raise StorageProxyException(f"Error fething JSON from bucket. {str(e)}")
 
     def save_json(self, body: dict, filename: str):
         try:
-            self.bucket_interface.put_object(Bucket=self.bucket_name, Key=self.root_dir)
-            self.bucket_interface.put_object(
+            self.storage_interface.put_object(
+                Bucket=self.bucket_name, Key=self.root_dir
+            )
+            self.storage_interface.put_object(
                 Bucket=self.bucket_name,
                 Key=f"{self.root_dir}{filename}",
                 Body=json.dumps(body),
             )
         except Exception as e:
-            raise BucketProxyException(f"Error saving JSON to bucket. {str(e)}")
+            raise StorageProxyException(f"Error saving JSON to bucket. {str(e)}")
+
+    def save_bytes(self, body: bytes, filename: str):
+        try:
+            self.storage_interface.put_object(
+                Key=f"{self.root_dir}{filename}",
+                Body=body,
+            )
+        except Exception as e:
+            raise StorageProxyException(f"Error saving bytes to bucket. {str(e)}")
+
+    def get_bytes(self, *args, **kwargs):
+        pass
+
+    # Extra S3 specific methods
 
     def delete_files(self, filenames):
         try:
             if len(filenames) > 0:
                 objects = [{"Key": filename} for filename in filenames]
-                self.bucket_interface.delete_objects(
+                self.storage_interface.delete_objects(
                     Bucket=self.bucket_name, Delete={"Objects": objects}
                 )
         except Exception as e:
-            raise BucketProxyException(f"Error deleting files from bucket. {str(e)}")
+            raise StorageProxyException(f"Error deleting files from bucket. {str(e)}")
 
     def list_dir(self, dir: str = ""):
         try:
-            list_response = self.bucket_interface.list_objects_v2(
+            list_response = self.storage_interface.list_objects_v2(
                 Bucket=self.bucket_name
             )
             contents = list_response.get("Contents")
@@ -58,24 +95,23 @@ class StorageProxyBase(ABC):
             ]
             return object_keys
         except Exception as e:
-            raise BucketProxyException(f"Error listing files from bucket. {str(e)}")
+            raise StorageProxyException(f"Error listing files from bucket. {str(e)}")
 
-    def save_bytes(self, body: bytes, filename: str):
+    # Private methods
+
+    def _verify_root_dir(self):
         try:
-            self.bucket_interface.put_object(
-                Key=f"{self.root_dir}{filename}",
-                Body=body,
-            )
-        except Exception as e:
-            raise BucketProxyException(f"Error saving bytes to bucket. {str(e)}")
+            assert self.root_dir.endswith("/")
+        except:
+            self.root_dir = f"{self.root_dir}/"
 
 
-class MockBucketProxy(StorageProxyBase):
+class MockS3StorageProxy(S3StorageProxyBase):
     def __init__(self, bucket_name, root_dir, mock_config={}) -> None:
         super().__init__(bucket_name, root_dir)
-        self.bucket_interface = MagicMock()
+        self.storage_interface = MagicMock()
         mock_attrs = {"get_object.return_value": self.create_object_mock()}
-        self.bucket_interface.configure_mock(**mock_attrs)
+        self.storage_interface.configure_mock(**mock_attrs)
 
     def create_object_mock(self):
         class StreamingBodyMock:
@@ -87,7 +123,7 @@ class MockBucketProxy(StorageProxyBase):
         return object
 
 
-class BucketProxy(StorageProxyBase):
+class S3StorageProxy(S3StorageProxyBase):
     def __init__(self, bucket_name, root_dir) -> None:
         super().__init__(bucket_name, root_dir)
-        self.bucket_interface = setup_client()
+        self.storage_interface = setup_client()

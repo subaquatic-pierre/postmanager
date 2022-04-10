@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from postmanager.event import Event
 from postmanager.manager import PostManager
-from postmanager.meta import PostMeta
+from postmanager.meta import PostMetaData
 from postmanager.post import Post
 
 
@@ -23,9 +23,9 @@ class Method(ABC):
 
     def _check_if_testing(self):
         post_manager_bucket_proxy_class_name = (
-            self.post_manager.bucket_proxy.__class__.__name__
+            self.post_manager.storage_proxy.__class__.__name__
         )
-        if post_manager_bucket_proxy_class_name == "MockBucketProxy":
+        if post_manager_bucket_proxy_class_name == "MockS3StorageProxy":
             self.error_message = ""
             self.response_body["testing"] = True
 
@@ -82,7 +82,7 @@ class PostMethod(Method):
 
         try:
             title = meta_data.get("title")
-            post_meta: PostMeta = self.post_manager.create_meta(title)
+            post_meta: PostMetaData = self.post_manager.create_meta(title)
             post: Post = self.post_manager.create_post(post_meta, content)
 
         except Exception as e:

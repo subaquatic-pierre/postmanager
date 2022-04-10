@@ -1,4 +1,4 @@
-class PostMeta:
+class PostMetaData:
     def __init__(self, id, attrs) -> None:
         self.id = id
         self._attrs_list = []
@@ -12,7 +12,7 @@ class PostMeta:
 
         return data
 
-    def update(self, meta_dict:dict):
+    def update(self, meta_dict: dict):
         for key, value in meta_dict.items():
             # Never update id
             if key == "id":
@@ -31,8 +31,8 @@ class PostMeta:
 
     @staticmethod
     def from_json(meta_dict: dict):
-        assert meta_dict.get('id') != None, "meta_dict object must contain an ID key"
+        assert meta_dict.get("id") != None, "meta_dict object must contain an ID key"
 
-        post_meta = PostMeta(meta_dict.get('id'), meta_dict)
+        post_meta = PostMetaData(meta_dict.get("id"), meta_dict)
 
         return post_meta
