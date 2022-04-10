@@ -7,7 +7,7 @@ from postmanager.config import setup_client
 from postmanager.exception import BucketProxyException
 
 
-class BucketProxyBase(ABC):
+class StorageProxyBase(ABC):
     def __init__(self, bucket_name, root_dir) -> None:
         self.bucket_name = bucket_name
         self.root_dir = root_dir
@@ -70,7 +70,7 @@ class BucketProxyBase(ABC):
             raise BucketProxyException(f"Error saving bytes to bucket. {str(e)}")
 
 
-class MockBucketProxy(BucketProxyBase):
+class MockBucketProxy(StorageProxyBase):
     def __init__(self, bucket_name, root_dir, mock_config={}) -> None:
         super().__init__(bucket_name, root_dir)
         self.bucket_interface = MagicMock()
@@ -87,7 +87,7 @@ class MockBucketProxy(BucketProxyBase):
         return object
 
 
-class BucketProxy(BucketProxyBase):
+class BucketProxy(StorageProxyBase):
     def __init__(self, bucket_name, root_dir) -> None:
         super().__init__(bucket_name, root_dir)
         self.bucket_interface = setup_client()

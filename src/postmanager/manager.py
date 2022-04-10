@@ -1,13 +1,13 @@
 from postmanager.meta import PostMeta
 from postmanager.post import Post
 from postmanager.event import Event
-from postmanager.proxy import BucketProxy, MockBucketProxy, BucketProxyBase
+from postmanager.proxy import BucketProxy, MockBucketProxy, StorageProxyBase
 from postmanager.exception import BucketProxyException, PostManagerException
 from postmanager.utils import BUCKET_NAME
 
 
 class PostManager:
-    def __init__(self, bucket_proxy: BucketProxyBase, template_name: str) -> None:
+    def __init__(self, bucket_proxy: StorageProxyBase, template_name: str) -> None:
         self.bucket_proxy = bucket_proxy
         self.template_name = template_name
         self._init_bucket()

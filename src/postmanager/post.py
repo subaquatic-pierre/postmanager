@@ -1,11 +1,11 @@
 import json
-from postmanager.proxy import BucketProxyBase
+from postmanager.proxy import StorageProxyBase
 from postmanager.meta import PostMeta
 
 
 class Post:
     def __init__(
-        self, bucket_proxy: BucketProxyBase, meta_data: PostMeta, content="", image=None
+        self, bucket_proxy: StorageProxyBase, meta_data: PostMeta, content="", image=None
     ) -> None:
         self.id = meta_data.id
         self.bucket_proxy = bucket_proxy
