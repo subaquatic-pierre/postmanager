@@ -34,8 +34,7 @@ class PostManager:
 
         post_meta = PostMetaData.from_json(meta[0])
 
-        content = self._get_post_content(post_meta.id)
-        post = self.create_post(post_meta, content)
+        post = self.create_post(post_meta)
 
         return post
 
@@ -53,10 +52,10 @@ class PostManager:
 
         return post_meta
 
-    def create_post(self, post_meta: PostMetaData, content) -> Post:
+    def create_post(self, post_meta: PostMetaData, content="") -> Post:
         post_root_dir = f"{self.storage_proxy.root_dir}{post_meta.id}/"
         post_bucket_proxy = self._create_post_bucket_proxy(post_root_dir)
-        post = Post(post_bucket_proxy, post_meta, content)
+        post = Post(post_bucket_proxy, post_meta, content=content)
 
         return post
 

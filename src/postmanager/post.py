@@ -11,13 +11,11 @@ class Post:
         storage_proxy: StorageProxyBase,
         meta_data: PostMetaData,
         content="",
-        cover_image="",
     ) -> None:
         self.id = meta_data.id
         self.storage_proxy = storage_proxy
         self.meta_data = meta_data
         self.content = content
-        self.cover_image: bytes = cover_image
 
         self.image_map = {}
         self._unsaved_images = {}
@@ -33,11 +31,7 @@ class Post:
         self.storage_proxy.save_json(self.meta_data.to_json(), "meta.json")
 
         # Save content
-        self.storage_proxy.save_json(self._content, "content.json")
-
-        # Save images, for image in images
-        if self.cover_image:
-            self.storage_proxy.save_bytes(self.cover_image, f"images/cover_image.jpg")
+        self.storage_proxy.save_json(self.content, "content.json")
 
         # Save unsaved images
         if self._unsaved_images:
@@ -51,8 +45,8 @@ class Post:
                 # Reset unsaved images
                 self._unsaved_images = {}
 
-            # Update image_index
-            self.storage_proxy.save_json(self.image_map, "images/image_index.json")
+        # Update image_index
+        self.storage_proxy.save_json(self.image_map, "images/image_index.json")
 
     def add_image(self, byte_str, image_name):
         self._unsaved_images[image_name] = byte_str
@@ -76,7 +70,6 @@ class Post:
         return {
             "meta_data": self.meta_data.to_json(),
             "content": self.content,
-            "images": {"cover_image": self.get_cover_image()},
             "image_map": self.image_map,
         }
 
@@ -135,7 +128,9 @@ class Post:
 
     def _init_post_data(self):
         self._init_images()
-        self._init_content()
+
+        if not self.content:
+            self._init_content()
 
     def __str__(self):
         return json.dumps(self.meta_data.to_json(), indent=2)
