@@ -1,5 +1,7 @@
 import json
-import base64
+from base64 import b64decode, b64encode
+
+import re
 from postmanager.storage_proxy import StorageProxyBase
 from postmanager.meta import PostMetaData
 from postmanager.exception import StorageProxyException
@@ -19,6 +21,7 @@ class Post:
 
         self.image_map = {}
         self._unsaved_images = {}
+        self._undeleted_images = []
 
         # Init data from storage
         self._init_post_data()
@@ -35,27 +38,34 @@ class Post:
 
         # Save unsaved images
         if self._unsaved_images:
-            for image_name, byte_str in self._unsaved_images.items():
-                image_key = f"images/{image_name}.jpg"
+            self._save_images()
 
-                # Save image
-                self.storage_proxy.save_bytes(byte_str, image_key)
-                self.image_map[image_name] = image_key
-
-                # Reset unsaved images
-                self._unsaved_images = {}
+        if self._undeleted_images:
+            self._delete_images()
 
         # Update image_index
         self.storage_proxy.save_json(self.image_map, "images/image_index.json")
 
-    def add_image(self, byte_str, image_name):
-        self._unsaved_images[image_name] = byte_str
+    def add_image(self, image_uri, image_name):
+        header, encoded_image = image_uri.split(",", 1)
+
+        index1 = header.find("/") + 1
+        index2 = header.find(";")
+        file_format = header[index1:index2]
+
+        self._unsaved_images[image_name] = {
+            "bytes": b64decode(encoded_image),
+            "format": file_format,
+        }
 
     def remove_image(self, image_name):
         try:
             del self._unsaved_images[image_name]
         except:
             return "Image does not exist"
+
+    def delete_image(self, image_name):
+        self._undeleted_images.append(image_name)
 
     def list_image_urls(self):
         image_keys = self.storage_proxy.list_dir(f"images/")
@@ -73,39 +83,66 @@ class Post:
             "image_map": self.image_map,
         }
 
-    def get_image(self, image_name, format="str"):
+    def get_image(self, image_name, format="web"):
         try:
-            image_key = self.image_map[image_name]
+            filename = self.image_map[image_name]
 
-            byte_str = self.storage_proxy.get_bytes(image_key)
-            base64_image = byte_str.decode("utf-8")
+            image_bytes = self.storage_proxy.get_bytes(filename)
 
-            if format == "bytes":
-                byte_str
+            image_bytes_base64 = b64encode(image_bytes)
+
+            file_format = filename.split(".")[1]
+
+            image_web_format = (
+                f"data:image/{file_format};base64," + image_bytes_base64.decode("utf-8")
+            )
+
+            if format == "web":
+                return image_web_format
 
             elif format == "str":
-                return base64_image
+                return image_bytes_base64.decode("utf-8")
 
-            return base64_image
+            elif format == "byte":
+                return image_bytes
+
+            elif format == "byte64":
+                return image_bytes_base64
+
+            return image_web_format
 
         except StorageProxyException:
             return ""
 
-    def get_cover_image(self, format="str") -> str:
-        try:
-            byte_str = self.storage_proxy.get_bytes(f"images/cover_image.jpg")
-            base64_image = byte_str.decode("utf-8")
+    def _delete_images(self):
+        for image_name in self._undeleted_images:
+            try:
+                image_key = f"images/{image_name}.jpg"
 
-            if format == "bytes":
-                byte_str
+                # Delete image
+                self.storage_proxy.delete_object(image_key)
 
-            elif format == "str":
-                return base64_image
+                # Update self image map
+                del self.image_map[image_name]
 
-            return base64_image
+            except:
+                pass
 
-        except StorageProxyException:
-            return ""
+        # Reset to empty array
+        self._undeleted_images = []
+
+    def _save_images(self):
+        for image_name, image_data in self._unsaved_images.items():
+            filename = f"images/{image_name}.{image_data['format']}"
+
+            # Save image
+            self.storage_proxy.save_bytes(image_data["bytes"], filename)
+
+            # Update self image map
+            self.image_map[image_name] = filename
+
+        # Reset unsaved images
+        self._unsaved_images = {}
 
     def _base_image_url(self):
         return f"https://{self.storage_proxy.bucket_name}.s3.amazonaws.com/"

@@ -78,6 +78,14 @@ class S3StorageProxyBase(StorageProxyBase):
 
     # Extra S3 specific methods
 
+    def delete_object(self, filename):
+        try:
+            self.storage_interface.delete_object(
+                Bucket=self.bucket_name, Key=f"{self.root_dir}{filename}"
+            )
+        except Exception as e:
+            raise StorageProxyException(f"Error deleting object from bucket. {str(e)}")
+
     def delete_files(self, filenames):
         try:
             if len(filenames) > 0:
