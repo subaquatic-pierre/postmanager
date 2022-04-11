@@ -3,7 +3,7 @@ from unittest import TestCase
 from unittest.mock import MagicMock
 
 from postmanager.storage_proxy import MockS3StorageProxy
-from postmanager.utils import BUCKET_NAME, BUCKET_ROOT_DIR
+from .utils import BUCKET_NAME, BUCKET_ROOT_DIR
 
 
 class StorageProxyTest(TestCase):

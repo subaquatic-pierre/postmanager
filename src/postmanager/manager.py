@@ -1,13 +1,13 @@
 from postmanager.meta import PostMetaData
 from postmanager.post import Post
-from postmanager.event import Event
+from postmanager.http import Event
+
 from postmanager.storage_proxy import (
     S3StorageProxy,
     MockS3StorageProxy,
     StorageProxyBase,
 )
 from postmanager.exception import StorageProxyException, PostManagerException
-from postmanager.utils import BUCKET_NAME
 
 
 class PostManager:
