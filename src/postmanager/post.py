@@ -19,9 +19,9 @@ class Post:
         self.meta_data = meta_data
         self.content = content
 
-        self.image_map = {}
-        self._unsaved_images = {}
-        self._undeleted_images = []
+        self.media_index = {}
+        self._unsaved_media = {}
+        self._undeleted_media = []
 
         # Init data from storage
         self._init_post_data()
@@ -37,123 +37,152 @@ class Post:
         self.storage_proxy.save_json(self.content, "content.json")
 
         # Save unsaved images
-        if self._unsaved_images:
-            self._save_images()
+        if self._unsaved_media:
+            self._save_media()
 
-        if self._undeleted_images:
-            self._delete_images()
+        if self._undeleted_media:
+            self._delete_media()
 
         # Update image_index
-        self.storage_proxy.save_json(self.image_map, "images/image_index.json")
-
-    def add_image(self, image_uri, image_name):
-        header, encoded_image = image_uri.split(",", 1)
-
-        index1 = header.find("/") + 1
-        index2 = header.find(";")
-        file_format = header[index1:index2]
-
-        self._unsaved_images[image_name] = {
-            "bytes": b64decode(encoded_image),
-            "format": file_format,
-        }
-
-    def remove_image(self, image_name):
-        try:
-            del self._unsaved_images[image_name]
-        except:
-            return "Image does not exist"
-
-    def delete_image(self, image_name):
-        self._undeleted_images.append(image_name)
-
-    def list_image_urls(self):
-        image_keys = self.storage_proxy.list_dir(f"images/")
-        urls = [f"{self._base_image_url()}{image_key}" for image_key in image_keys]
-        return urls
-
-    def list_files(self):
-        return self.storage_proxy.list_dir()
+        self._save_media_index()
 
     def to_json(self):
 
         return {
             "meta_data": self.meta_data.to_json(),
             "content": self.content,
-            "image_map": self.image_map,
+            "media_index": self.media_index,
         }
 
-    def get_image(self, image_name, format="web"):
+    # Media methods
+    # -----
+
+    def add_media(
+        self, media_data, media_name, media_data_format="data_url", overwrite=True
+    ):
+        # TODO: Check if media data format is data_url
+        # Handle none data_url media format
+
+        # TODO: Check if media_name exists, do not overwrite if overwrite is False
+
+        data_header, encoded_image = media_data.split(",", 1)
+
+        index1 = data_header.find(":") + 1
+        index2 = data_header.find(";")
+
+        file_type = data_header[index1:index2]
+
+        self._unsaved_media[media_name] = {
+            "bytes": b64decode(encoded_image),
+            "file_type": file_type,
+        }
+
+    def remove_media(self, media_name):
         try:
-            filename = self.image_map[image_name]
+            del self._unsaved_media[media_name]
+        except:
+            return "Image does not exist"
+
+    def delete_media(self, media_name):
+        self._undeleted_media.append(media_name)
+
+    def get_media(self, media_name, return_format="data_url"):
+        try:
+            media_data = self.media_index[media_name]
+            filename = media_data["filename"]
 
             image_bytes = self.storage_proxy.get_bytes(filename)
 
             image_bytes_base64 = b64encode(image_bytes)
 
-            file_format = filename.split(".")[1]
+            file_prefix = self._get_media_file_prefix(media_data["file_type"])
+            file_ext = self._get_media_file_ext(media_data["file_type"])
 
-            image_web_format = (
-                f"data:image/{file_format};base64," + image_bytes_base64.decode("utf-8")
+            image_data_url = (
+                f"data:{file_prefix}/{file_ext};base64,"
+                + image_bytes_base64.decode("utf-8")
             )
 
-            if format == "web":
-                return image_web_format
-
-            elif format == "str":
-                return image_bytes_base64.decode("utf-8")
-
-            elif format == "byte":
-                return image_bytes
-
-            elif format == "byte64":
+            if return_format == "byte64":
                 return image_bytes_base64
 
-            return image_web_format
+            elif return_format == "byte64_str":
+                return image_bytes_base64.decode("utf-8")
 
-        except StorageProxyException:
-            return ""
+            return image_data_url
 
-    def _delete_images(self):
-        for image_name in self._undeleted_images:
+        except StorageProxyException as e:
+            return f"{str(e)}"
+
+    # List files methods
+    # -----
+
+    def list_files(self):
+        return self.storage_proxy.list_dir()
+
+    # Private methods
+    # -----
+
+    def _delete_media(self):
+        for media_name in self._undeleted_media:
             try:
-                image_key = f"images/{image_name}.jpg"
+                media_data = self.media_index[media_name]
 
                 # Delete image
-                self.storage_proxy.delete_object(image_key)
+                self.storage_proxy.delete_object(media_data["filename"])
 
                 # Update self image map
-                del self.image_map[image_name]
+                del self.media_index[media_name]
 
-            except:
+            except Exception:
                 pass
 
-        # Reset to empty array
-        self._undeleted_images = []
+        # Reset undeleted media
+        self._undeleted_media = []
 
-    def _save_images(self):
-        for image_name, image_data in self._unsaved_images.items():
-            filename = f"images/{image_name}.{image_data['format']}"
+    def _save_media(self):
+        for media_name, media_data in self._unsaved_media.items():
 
-            # Save image
-            self.storage_proxy.save_bytes(image_data["bytes"], filename)
+            file_ext = self._get_media_file_ext(media_data["file_type"])
+            filename = f"media/{media_name}.{file_ext}"
 
-            # Update self image map
-            self.image_map[image_name] = filename
+            # Save media
+            self.storage_proxy.save_bytes(media_data["bytes"], filename)
 
-        # Reset unsaved images
-        self._unsaved_images = {}
+            # Remove bytes from media_data
+            del media_data["bytes"]
 
-    def _base_image_url(self):
-        return f"https://{self.storage_proxy.bucket_name}.s3.amazonaws.com/"
+            # Add filename to media_data
+            media_data["filename"] = filename
 
-    def _init_images(self):
+            # Update media index with new media_data
+            self.media_index[media_name] = media_data
+
+        # Reset unsaved media
+        self._unsaved_media = {}
+
+    def _get_media_file_ext(self, file_type):
+        file_prefix, file_ext = file_type.split("/")
+
+        if file_prefix == "text":
+            return "txt"
+
+        return file_ext
+
+    def _get_media_file_prefix(self, file_type):
+        file_prefix, _ = file_type.split("/")
+        return file_prefix
+
+    def _save_media_index(self):
+        self.storage_proxy.save_json(self.media_index, "media/media_index.json")
+
+    def _init_media(self):
         try:
-            data = self.storage_proxy.get_json(f"images/image_index.json")
-            self.image_map = data
+            data = self.storage_proxy.get_json(f"media/media_index.json")
+            self.media_index = data
 
         except StorageProxyException:
-            self.image_map = {}
+            self.media_index = {}
 
     def _init_content(self):
         try:
@@ -164,7 +193,7 @@ class Post:
             self.content = ""
 
     def _init_post_data(self):
-        self._init_images()
+        self._init_media()
 
         if not self.content:
             self._init_content()
