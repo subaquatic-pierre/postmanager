@@ -1,9 +1,10 @@
-from postmanager.storage_base import StorageModel, StorageBase
+from postmanager.storage_base import StorageBase
+from postmanager.storage_adapter import StorageAdapter
 from postmanager.exception import StorageProxyException
 from base64 import b64decode, b64encode
 
 
-class MediaData(StorageModel):
+class MediaData(StorageAdapter):
     def __init__(self, storage_proxy: StorageBase) -> None:
         super().__init__(storage_proxy)
 

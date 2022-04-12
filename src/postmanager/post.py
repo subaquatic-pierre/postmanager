@@ -2,12 +2,12 @@ import json
 from postmanager.media_data import MediaData
 
 from postmanager.storage_base import StorageBase
-from postmanager.storage_model import StorageModel
+from postmanager.storage_adapter import StorageAdapter
 from postmanager.meta_data import PostMetaData
 from postmanager.exception import StorageProxyException
 
 
-class Post(StorageModel):
+class Post(StorageAdapter):
     def __init__(
         self,
         storage_proxy: StorageBase,

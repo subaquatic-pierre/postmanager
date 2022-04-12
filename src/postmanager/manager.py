@@ -4,16 +4,17 @@ from postmanager.post import Post
 from postmanager.http import Event
 
 from postmanager.exception import StorageProxyException, PostManagerException
-from postmanager.storage_model import StorageModel
-from postmanager.storage_proxy import StorageProxy
+from postmanager.storage_base import StorageBase
+from postmanager.storage_adapter import StorageAdapter
+from postmanager.storage_proxy_local import StorageProxyLocal
 from postmanager.storage_proxy_s3 import (
     StorageProxyS3,
     MockStorageProxyS3,
 )
 
 
-class PostManager(StorageModel):
-    def __init__(self, storage_proxy: StorageProxy) -> None:
+class PostManager(StorageAdapter):
+    def __init__(self, storage_proxy: StorageBase) -> None:
         super().__init__(storage_proxy)
         self._init_bucket()
 
@@ -202,6 +203,13 @@ class PostManager(StorageModel):
             bucket_name=bucket_name,
             root_dir=f"{template}/",
         )
+
+        post_manager = PostManager(storage_proxy)
+        return post_manager
+
+    @staticmethod
+    def setup_local(template: str = "post"):
+        storage_proxy = StorageProxyLocal(root_dir=f"{template}/")
 
         post_manager = PostManager(storage_proxy)
         return post_manager

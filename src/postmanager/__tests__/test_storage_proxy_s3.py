@@ -6,7 +6,7 @@ from postmanager.storage_proxy_s3 import MockStorageProxyS3
 from .utils import BUCKET_NAME, BUCKET_ROOT_DIR
 
 
-class StorageProxyTest(TestCase):
+class StorageProxyS3Test(TestCase):
     def setUp(self) -> None:
         super().setUp()
         self.bucket = MockStorageProxyS3(BUCKET_NAME, BUCKET_ROOT_DIR)

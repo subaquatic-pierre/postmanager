@@ -20,11 +20,11 @@ class StorageBase(ABC):
         pass
 
     @abstractmethod
-    def delete_files(self, filename: List[str]):
+    def delete_files(self, filenames: List[str]) -> None:
         pass
 
     @abstractmethod
-    def delete_file(self, filename: str):
+    def delete_file(self, filename: str) -> None:
         pass
 
     @abstractmethod

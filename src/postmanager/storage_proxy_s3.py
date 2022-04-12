@@ -4,14 +4,15 @@ from unittest.mock import MagicMock
 
 from postmanager.config import setup_client
 from postmanager.exception import StorageProxyException
-from postmanager.storage_proxy import StorageProxy
+from postmanager.storage_base import StorageBase
 
 
-class StorageProxyS3Base(StorageProxy):
+class StorageProxyS3Base(StorageBase):
     def __init__(self, bucket_name, root_dir) -> None:
-        super().__init__(root_dir)
-
+        self.root_dir = root_dir
         self.bucket_name = bucket_name
+
+        self._verify_root_dir()
 
     def get_json(self, filename):
         try:
@@ -56,8 +57,6 @@ class StorageProxyS3Base(StorageProxy):
         except Exception as e:
             raise StorageProxyException(f"Error fething Bytes from bucket. {str(e)}")
 
-    # Extra S3 specific methods
-
     def delete_file(self, filename: str) -> None:
         try:
             self.storage_interface.delete_object(
@@ -92,6 +91,23 @@ class StorageProxyS3Base(StorageProxy):
         except Exception as e:
             raise StorageProxyException(f"Error listing files from bucket. {str(e)}")
 
+    def _verify_root_dir(self) -> None:
+        try:
+            assert self.root_dir.endswith("/")
+        except:
+            self.root_dir = f"{self.root_dir}/"
+
+
+class StorageProxyS3(StorageProxyS3Base):
+    def __init__(self, bucket_name, root_dir) -> None:
+        super().__init__(bucket_name, root_dir)
+        self.storage_interface = setup_client()
+
+
+# ----------
+# Created MockStorageProxyS3 for testing purposes
+# ----------
+
 
 class MockStorageProxyS3(StorageProxyS3Base):
     def __init__(self, bucket_name, root_dir, mock_config={}) -> None:
@@ -112,7 +128,4 @@ class MockStorageProxyS3(StorageProxyS3Base):
         return object
 
 
-class StorageProxyS3(StorageProxyS3Base):
-    def __init__(self, bucket_name, root_dir) -> None:
-        super().__init__(bucket_name, root_dir)
-        self.storage_interface = setup_client()
+# ----------

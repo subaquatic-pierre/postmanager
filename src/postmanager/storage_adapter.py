@@ -1,11 +1,10 @@
 from typing import List
 
-from postmanager.storage_proxy import StorageProxy
 from postmanager.storage_base import StorageBase
 
 
-class StorageModel(StorageBase):
-    def __init__(self, storage_proxy: StorageProxy) -> None:
+class StorageAdapter(StorageBase):
+    def __init__(self, storage_proxy: StorageBase) -> None:
         self.storage_proxy = storage_proxy
 
     def save_json(self, body: dict, filename: str) -> None:
@@ -32,7 +31,7 @@ class StorageModel(StorageBase):
     def get_root_dir(self) -> str:
         return self.storage_proxy.root_dir
 
-    def new_storage_proxy(self, new_root: str, mock_config={}) -> StorageProxy:
+    def new_storage_proxy(self, new_root: str, mock_config={}) -> StorageBase:
 
         # Import storage proxies
         from postmanager.storage_proxy_s3 import (
