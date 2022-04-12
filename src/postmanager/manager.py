@@ -1,38 +1,56 @@
-from postmanager.meta import PostMeta
+from typing import List
+from postmanager.meta_data import PostMetaData
 from postmanager.post import Post
-from postmanager.event import Event
-from postmanager.proxy import BucketProxy, MockBucketProxy, BucketProxyBase
-from postmanager.exception import BucketProxyException, PostManagerException
-from postmanager.utils import BUCKET_NAME
+from postmanager.http import Event
+
+from postmanager.exception import StorageProxyException, PostManagerException
+from postmanager.storage_base import ModelStorage, StorageProxy
+from postmanager.s3_storage_proxy import (
+    S3StorageProxy,
+    MockS3StorageProxy,
+)
 
 
-class PostManager:
-    def __init__(self, bucket_proxy: BucketProxyBase, template_name: str) -> None:
-        self.bucket_proxy = bucket_proxy
-        self.template_name = template_name
+class PostManager(ModelStorage):
+    def __init__(self, storage_proxy: StorageProxy) -> None:
+        super().__init__(storage_proxy)
         self._init_bucket()
 
     @property
     def index(self):
-        obj_json = self.bucket_proxy.get_json("index.json")
+        obj_json = self.get_json("index.json")
         return obj_json
 
-    def list_all_files(self):
-        return self.bucket_proxy.list_dir()
+    def update_index(self, new_index: list):
+        self.save_json(new_index, "index.json")
 
-    def get_json(self, filename):
-        return self.bucket_proxy.get_json(filename)
+    # Post get methods
+    # -----
 
     def get_by_id(self, id) -> Post:
         id = int(id)
 
-        meta = [meta_data for meta_data in self.index if meta_data["id"] == id]
-        self._verify_meta(meta, "No blog with that ID found")
+        meta_dict_list = [
+            meta_data for meta_data in self.index if meta_data["id"] == id
+        ]
+        self._verify_meta(meta_dict_list, "No blog with that ID found")
 
-        post_meta = PostMeta.from_json(meta[0])
+        # Build meta
+        meta_data = self.build_meta_data(meta_dict_list[0])
 
-        content = self._get_post_content(post_meta.id)
-        post = self.create_post(post_meta, content)
+        # Build post
+        post = self.build_post(meta_data)
+
+        return post
+
+    def build_meta_data(self, meta_dict: dict):
+        storage_proxy = self.new_storage_proxy(f"{meta_dict['id']}/")
+        post_meta_data = PostMetaData.from_json(storage_proxy, meta_dict)
+        return post_meta_data
+
+    def build_post(self, post_meta: PostMetaData, content="") -> Post:
+        storage_proxy = self.new_storage_proxy(f"{post_meta.id}/")
+        post = Post(storage_proxy, post_meta, content=content)
 
         return post
 
@@ -41,32 +59,45 @@ class PostManager:
         self._verify_meta(meta, "No blog with that title found")
         return meta[0]["id"]
 
-    def create_meta(self, meta_dict:dict) -> PostMeta:
-        new_id = self.get_new_id()
+    def get_post_content(self, post_id):
+        return self.get_json(f"{post_id}/content.json")
 
-        meta_dict['id'] = new_id
+    # Post new methods
+    # -----
 
-        post_meta = PostMeta.from_json(meta_dict)
+    def new_meta_data(self, meta_dict: dict) -> PostMetaData:
+        # Add ID to meta if not exists
+        post_id = meta_dict.get("id", False)
 
-        return post_meta
+        if not post_id:
+            new_id = self.new_post_id()
+            meta_dict["id"] = new_id
 
-    def create_post(self, post_meta: PostMeta, content) -> Post:
-        post_root_dir = f"{self.bucket_proxy.root_dir}{post_meta.id}/"
-        post_bucket_proxy = self._create_post_bucket_proxy(post_root_dir)
-        post = Post(post_bucket_proxy, post_meta, content)
+        new_storage_proxy = self.new_storage_proxy(f"{meta_dict['id']}/")
+        new_meta_data = PostMetaData.from_json(new_storage_proxy, meta_dict)
+        return new_meta_data
+
+    def new_post(self, post_meta: dict, content="") -> Post:
+        new_post_meta = self.new_meta_data(post_meta)
+
+        post_storage_proxy = self.new_storage_proxy(f"{new_post_meta.id}/")
+        post = Post(post_storage_proxy, new_post_meta, content=content)
 
         return post
+
+    # Post update methods
+    # -----
 
     def save_post(self, post: Post):
         # Update index and save post
         try:
             new_index = [meta for meta in self.index]
 
+            # Check if post needs to be updated or added to index
             is_new_post = True
             for index, meta_json in enumerate(self.index):
                 # Mathing meta found in index
-                meta = PostMeta.from_json(meta_json)
-                if meta.id == post.meta_data.id:
+                if meta_json["id"] == post.meta_data.id:
                     # Set new post flag to false
                     is_new_post = False
 
@@ -77,7 +108,7 @@ class PostManager:
                 new_index.append(post.meta_data.to_json())
 
             post.save()
-            self._update_index(new_index)
+            self.update_index(new_index)
 
             return post
 
@@ -90,95 +121,86 @@ class PostManager:
         post_files = post.list_files()
 
         # Add root dir to filenames
-        post_files.append(post.bucket_proxy.root_dir)
-        self.bucket_proxy.delete_files(post_files)
+        post_files.append(post.get_root_dir())
+        self.delete_files(post_files)
 
         # Update index
         new_index = [meta for meta in self.index if meta["id"] != id]
-        self._update_index(new_index)
+        self.update_index(new_index)
 
-    def get_meta(self, post_id):
+    def get_meta_data(self, post_id):
         for index_meta in self.index:
-            meta = PostMeta.from_json(index_meta)
+            meta = PostMetaData.from_json(index_meta)
             if meta.id == int(post_id):
                 return meta
 
         raise PostManagerException("Meta data not found")
 
-    # Private methods
-    def _get_post_content(self, post_id):
-        return self.bucket_proxy.get_json(f"{post_id}/content.json")
-
-    def _create_post_bucket_proxy(self, post_root_dir, mock_config={}):
-        if self.bucket_proxy.__class__.__name__ == "MockBucketProxy":
-            return MockBucketProxy(
-                self.bucket_proxy.bucket_name, post_root_dir, mock_config=mock_config
-            )
-        else:
-            return BucketProxy(self.bucket_proxy.bucket_name, post_root_dir)
-
-    def get_new_id(self):
-        latest_id_json = self.bucket_proxy.get_json('latest_id.json')
-        latest_id = latest_id_json.get('latest_id')
+    def new_post_id(self):
+        latest_id_json = self.get_json("latest_id.json")
+        latest_id = latest_id_json.get("latest_id")
         new_id = latest_id + 1
-        self.bucket_proxy.save_json({"latest_id":new_id},'latest_id.json')
+
+        self.save_json({"latest_id": new_id}, "latest_id.json")
         return latest_id
 
-    def _update_index(self, new_index: list):
-        self.bucket_proxy.save_json(new_index, "index.json")
+    # Private methods
+    # -----
 
     def _init_bucket(self):
         # Check if index exists
         try:
-            self.bucket_proxy.get_json("index.json")
+            self.get_json("index.json")
 
-        except BucketProxyException:
-            self.bucket_proxy.save_json([], "index.json")
+        except StorageProxyException:
+            self.save_json([], "index.json")
 
         # Check if latest ID exists
         try:
-            self.bucket_proxy.get_json('latest_id.json')
+            self.get_json("latest_id.json")
 
-        except BucketProxyException:
-            self.bucket_proxy.save_json({"latest_id":0},'latest_id.json')
+        except StorageProxyException:
+            self.save_json({"latest_id": 0}, "latest_id.json")
 
-    def _verify_meta(self, meta, error_message):
-        if len(meta) > 1:
+    def _verify_meta(self, meta_data_list: List[dict], error_message):
+        if len(meta_data_list) > 1:
             raise PostManagerException("More than one blog with that ID found")
-        elif len(meta) == 0:
+        elif len(meta_data_list) == 0:
             raise PostManagerException(error_message)
 
     # Static methods
+    # -----
+
     @staticmethod
-    def setup_api_post_manager(event: Event):
+    def setup_s3_with_event(event: Event):
+        bucket_name = event.bucket_name
         path = event.path
         testing = event.testing
         mock_config = event.mock_config
-        template_str = path.split("/")[1]
-        template_name = template_str.capitalize()
+        template = path.split("/")[1]
 
         if testing:
-            bucket_proxy = MockBucketProxy(
-                bucket_name=BUCKET_NAME,
-                root_dir=f"{template_str}/",
+            storage_proxy = MockS3StorageProxy(
+                bucket_name=bucket_name,
+                root_dir=f"{template}/",
                 mock_config=mock_config,
             )
         else:
-            bucket_proxy = BucketProxy(
-                bucket_name=BUCKET_NAME,
-                root_dir=f"{template_str}/",
+            storage_proxy = S3StorageProxy(
+                bucket_name=bucket_name,
+                root_dir=f"{template}/",
             )
 
-        post_manager = PostManager(bucket_proxy, template_name)
+        post_manager = PostManager(storage_proxy)
 
         return post_manager
 
     @staticmethod
-    def setup(bucket_name: str, template_name:str = 'post'):
-        bucket_proxy = BucketProxy(
-                bucket_name=bucket_name,
-                root_dir=f"{template_name}/",
-            )
+    def setup_s3(bucket_name: str, template: str = "post"):
+        storage_proxy = S3StorageProxy(
+            bucket_name=bucket_name,
+            root_dir=f"{template}/",
+        )
 
-        post_manager = PostManager(bucket_proxy, template_name)
+        post_manager = PostManager(storage_proxy)
         return post_manager

@@ -3,70 +3,68 @@ from unittest.mock import MagicMock, call
 
 from postmanager.manager import PostManager
 from postmanager.post import Post
-from postmanager.meta import PostMeta
-from postmanager.exception import BucketProxyException
-
-from postmanager.utils import BUCKET_NAME, BUCKET_ROOT_DIR
+from postmanager.meta_data import PostMetaData
+from postmanager.exception import StorageProxyException
 
 
 class TestPostManager(TestCase):
     def setUp(self) -> None:
         super().setUp()
 
-        self.bucket_proxy = MagicMock()
-        self.blog_manager = PostManager(self.bucket_proxy, "Blog")
+        self.storage_proxy = MagicMock()
+        self.blog_manager = PostManager(self.storage_proxy)
 
     def test_manager_init_success(self):
-        bucket_proxy = MagicMock()
-        blog_manager = PostManager(bucket_proxy, "Blog")
+        storage_proxy = MagicMock()
+        blog_manager = PostManager(storage_proxy)
 
         expected_calls = [call("index.json"), call("latest_id.json")]
-        call_list = blog_manager.bucket_proxy.get_json.call_args_list
+        call_list = blog_manager.storage_proxy.get_json.call_args_list
         self.assertEqual(call_list, expected_calls)
 
     def test_manager_init_setup(self):
-        bucket_proxy = MagicMock()
-        bucket_proxy.get_json.side_effect = BucketProxyException()
-        blog_manager = PostManager(bucket_proxy, "Blog")
+        storage_proxy = MagicMock()
+        storage_proxy.get_json.side_effect = StorageProxyException()
+        blog_manager = PostManager(storage_proxy)
 
         expected_calls = [
             call([], "index.json"),
             call({"latest_id": 0}, "latest_id.json"),
         ]
-        call_list = blog_manager.bucket_proxy.save_json.call_args_list
+        call_list = blog_manager.storage_proxy.save_json.call_args_list
         self.assertEqual(call_list, expected_calls)
 
     def test_get_index(self):
-        self.bucket_proxy.get_json.return_value = []
+        self.storage_proxy.get_json.return_value = []
         index = self.blog_manager.index
-        self.blog_manager.bucket_proxy.get_json.assert_called_with("index.json")
+        self.blog_manager.storage_proxy.get_json.assert_called_with("index.json")
         self.assertIsInstance(index, list)
 
     def test_list_all_files(self):
-        self.bucket_proxy.list_dir.return_value = []
-        all_posts = self.blog_manager.list_all_files()
+        self.storage_proxy.list_dir.return_value = []
+        all_posts = self.blog_manager.list_files()
 
-        self.assertTrue(self.blog_manager.bucket_proxy.list_dir.called)
+        self.assertTrue(self.blog_manager.storage_proxy.list_dir.called)
         self.assertIsInstance(all_posts, list)
 
     def test_get_new_id(self):
-        self.bucket_proxy.get_json.return_value = {"latest_id": 42}
+        self.storage_proxy.get_json.return_value = {"latest_id": 42}
         latest_id = self.blog_manager.get_new_id()
 
-        self.bucket_proxy.get_json.assert_called_with("latest_id.json")
+        self.storage_proxy.get_json.assert_called_with("latest_id.json")
         self.assertEqual(latest_id, 42)
 
     def test_get_json(self):
         filename = "filename.txt"
-        self.bucket_proxy.get_json.return_value = {}
+        self.storage_proxy.get_json.return_value = {}
         json_res = self.blog_manager.get_json(filename)
 
         self.assertIsInstance(json_res, dict)
-        self.bucket_proxy.get_json.assert_called_with(filename)
+        self.storage_proxy.get_json.assert_called_with(filename)
 
     def test_get_by_id_error(self):
         post_id = 0
-        self.bucket_proxy.get_json.return_value = [
+        self.storage_proxy.get_json.return_value = [
             {"id": "noid", "title": "Sometitle", "timestamp": 000}
         ]
         with self.assertRaises(Exception) as e:
@@ -77,18 +75,18 @@ class TestPostManager(TestCase):
     def test_title_to_id(self):
         post_id = 0
         post_title = "Sometitle"
-        self.bucket_proxy.get_json.return_value = [
+        self.storage_proxy.get_json.return_value = [
             {"id": post_id, "title": post_title, "timestamp": 000}
         ]
 
         post_id = self.blog_manager.title_to_id(post_title)
 
-        self.blog_manager.bucket_proxy.get_json.assert_called_with("index.json")
+        self.blog_manager.storage_proxy.get_json.assert_called_with("index.json")
         self.assertIsInstance(post_id, int)
 
     def test_title_to_id_error(self):
         post_id = 0
-        self.bucket_proxy.get_json.return_value = [
+        self.storage_proxy.get_json.return_value = [
             {"id": "noid", "title": "Sometitle", "timestamp": 000}
         ]
         with self.assertRaises(Exception) as e:
@@ -101,52 +99,46 @@ class TestPostManagerWithPost(TestCase):
     def setUp(self) -> None:
         super().setUp()
 
-        self.bucket_proxy = MagicMock()
-        self.blog_manager = PostManager(self.bucket_proxy, "Blog")
+        self.storage_proxy = MagicMock()
+        self.blog_manager = PostManager(self.storage_proxy)
         self.post_title = "Amazing Post"
         self.post_content = {"blocks": "Cool post content"}
 
     def test_get_by_id(self):
         post_id = 0
-        self.bucket_proxy.get_json.return_value = [
+        self.storage_proxy.get_json.return_value = [
             {"id": post_id, "title": "Sometitle", "timestamp": 000}
         ]
 
         post = self.blog_manager.get_by_id(post_id)
 
-        get_json_call_list = self.blog_manager.bucket_proxy.get_json.call_args_list
-        exptected_calls = [
-            call("index.json"),
-            call("index.json"),
-            call("0/content.json"),
-        ]
-        self.assertEqual(get_json_call_list, exptected_calls)
+        self.blog_manager.storage_proxy.get_json.assert_called()
         self.assertIsInstance(post, Post)
         self.assertEqual(post.id, post_id)
 
     def test_create_meta_from_json(self):
         meta_dict = {"title": "Awesome Title"}
-        meta = self.blog_manager.create_meta(meta_dict)
+        meta = self.blog_manager.new_meta(meta_dict)
 
         self.assertEqual(meta.title, meta_dict.get("title"))
 
     def test_create_post(self):
         meta_dict = {"title": "Awesome Title"}
-        post_meta = self.blog_manager.create_meta(meta_dict)
+        post_meta = self.blog_manager.new_meta(meta_dict)
         post = self.blog_manager.create_post(post_meta, self.post_content)
 
-        post_root_dir = f"{self.blog_manager.bucket_proxy.root_dir}{post.id}/"
+        post_root_dir = f"{self.blog_manager.storage_proxy.root_dir}{post.id}/"
 
-        post.bucket_proxy.get_json = MagicMock(return_value=self.post_content)
+        self.storage_proxy.get_json.return_value = self.post_content
 
-        self.assertEqual(post.id, 0)
-        self.assertEqual(post.title, self.post_title)
-        self.assertEqual(post.content, self.post_content)
-        self.assertTrue(post.bucket_proxy.root_dir.endswith("/"))
-        self.assertEqual(post.bucket_proxy.root_dir, post_root_dir)
+        self.assertEqual(post.meta_data.title, meta_dict["title"])
+        self.assertEqual(post.content, "")
+        self.assertTrue(post.storage_proxy.root_dir.endswith("/"))
+        self.assertEqual(post.storage_proxy.root_dir, post_root_dir)
 
     def test_save_post(self):
-        post_meta = self.blog_manager.create_meta(self.post_title)
+        data = {"title": "Coolest"}
+        post_meta: PostMetaData = self.blog_manager.new_meta(data)
         post = self.blog_manager.create_post(post_meta, {"data": "Amazing data"})
         post.save = MagicMock()
 
@@ -159,7 +151,8 @@ class TestPostManagerWithPost(TestCase):
         self.assertEqual(post, return_value)
 
     def test_save_post_error(self):
-        post_meta: PostMeta = self.blog_manager.create_meta(self.post_title)
+        data = {"title": "Coolest"}
+        post_meta: PostMetaData = self.blog_manager.new_meta(data)
         post: Post = self.blog_manager.create_post(post_meta, {"data": "Amazing data"})
         post.save = MagicMock(side_effect=Exception)
 
@@ -172,46 +165,6 @@ class TestPostManagerWithPost(TestCase):
         self.assertEqual(str(e.exception), f"Post could not be saved, ")
 
     def test_delete_post(self):
-        post_meta: PostMeta = self.blog_manager.create_meta("Amazing Post")
+        data = {"title": "Coolest"}
+        post_meta: PostMetaData = self.blog_manager.new_meta(data)
         post: Post = self.blog_manager.create_post(post_meta, {"data": "Amazing data"})
-
-    # def test_save_post(self):
-    #     # Post args
-    #     post_id = 0
-    #     post_title = "Sometitle"
-    #     timestamp = 000
-    #     post_template = "Blog"
-    #     content = "My amazing content"
-
-    #     bucket_proxy_return_mock_value = []
-    #     attrs = {"get_json.return_value": bucket_proxy_return_mock_value}
-    #     self.bucket_proxy.configure_mock(**attrs)
-
-    #     # Create post
-    #     post_bucket_proxy = BucketProxy(
-    #         BUCKET_NAME, f"{BUCKET_NAME,BUCKET_ROOT_DIR}{post_id}"
-    #     )
-    #     post_meta = PostMeta(post_id, post_title, timestamp, post_template)
-    #     post_meta.to_json = MagicMock()
-    #     post = Post(post_meta, post_bucket_proxy, content)
-
-    #     self.blog_manager._update_index = MagicMock()
-
-    #     return_value = self.blog_manager.save_post(post)
-
-    #     self.blog_manager.bucket_proxy.get_json.assert_has_calls(
-    #         [call("index.json"), call("index.json")]
-    #     )
-
-    #     post.save.assert_called_once()
-    #     self.assertEqual(post, return_value)
-
-    # def test_title_to_id_success(self):
-    #     post_id = self.blog_manager.title_to_id("Nervous Poincare")
-    #     self.assertIsInstance(post_id, int)
-
-    # def test_title_to_id_not_found(self):
-    #     with self.assertRaises(Exception) as context:
-    #         self.blog_manager.title_to_id("Nervous")
-
-    #     self.assertTrue("No blog with that title found" in str(context.exception))

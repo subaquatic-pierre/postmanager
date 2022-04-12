@@ -1,12 +1,44 @@
+import json
 from abc import ABC, abstractmethod
-from postmanager.event import Event
-from postmanager.manager import PostManager
-from postmanager.meta import PostMeta
+
+from postmanager.meta_data import PostMetaData
 from postmanager.post import Post
 
 
+class Event:
+    def __init__(self, event) -> None:
+        self.event = event
+        self.body = self._parse_body()
+        self.path = self._parse_event_param("path", "")
+        self.bucket_name = self._parse_event_param("bucket_name", "default-s3-bucket")
+        self.testing = self._parse_event_param("test_api")
+        self.mock_config = self._parse_event_param("path")
+        self.headers = self._parse_event_param("headers")
+        self.query_string_params = self._parse_event_param("queryStringParameters")
+        self.error_message = ""
+
+    def _parse_body(self):
+        try:
+            body = self.event.get("body")
+            json_body = json.loads(body)
+            return json_body
+        except Exception as e:
+            self._set_error("There was an error parsing event body", e)
+
+    def _parse_event_param(self, param, default={}):
+        try:
+            param = self.event.get(param, default)
+            return param
+        except Exception as e:
+            self._set_error(f"An error occured parsing {param} from request event", e)
+
+    def _set_error(self, message, e=""):
+        text = f'{message}. {getattr(e, "message", str(e))}'
+        self.error_message = text
+
+
 class Method(ABC):
-    def __init__(self, request_event: Event, post_manager: PostManager) -> None:
+    def __init__(self, request_event: Event, post_manager) -> None:
         self.request_event = request_event
         self.post_manager = post_manager
         self.request_body = self.request_event.body
@@ -23,9 +55,9 @@ class Method(ABC):
 
     def _check_if_testing(self):
         post_manager_bucket_proxy_class_name = (
-            self.post_manager.bucket_proxy.__class__.__name__
+            self.post_manager.storage_proxy.__class__.__name__
         )
-        if post_manager_bucket_proxy_class_name == "MockBucketProxy":
+        if post_manager_bucket_proxy_class_name == "MockS3StorageProxy":
             self.error_message = ""
             self.response_body["testing"] = True
 
@@ -82,7 +114,7 @@ class PostMethod(Method):
 
         try:
             title = meta_data.get("title")
-            post_meta: PostMeta = self.post_manager.create_meta(title)
+            post_meta: PostMetaData = self.post_manager.new_meta(title)
             post: Post = self.post_manager.create_post(post_meta, content)
 
         except Exception as e:
@@ -144,3 +176,34 @@ class PutMethod(Method):
             return
 
         self.response_body = {"post": post.to_json()}
+
+
+class Response:
+    def __init__(self, body={}, error_message="", status_code=200) -> None:
+        self.body = body
+        self.error_message = error_message
+        self.status_code = status_code
+        self.default_headers = self.get_default_headers()
+
+    def get_default_headers(self):
+        return {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Headers": "Content-Type",
+            "Access-Control-Allow-Methods": "OPTIONS,POST,GET,PUT,DELETE",
+        }
+
+    def format(self, headers={}):
+        if self.error_message:
+            return {
+                "isBase64Encoded": False,
+                "statusCode": self.status_code,
+                "headers": self.get_default_headers(),
+                "body": json.dumps({"error": {"message": self.error_message}}),
+            }
+
+        return {
+            "isBase64Encoded": False,
+            "statusCode": self.status_code,
+            "headers": self.default_headers,
+            "body": json.dumps(self.body),
+        }

@@ -1,5 +1,10 @@
-class PostMeta:
-    def __init__(self, id, attrs) -> None:
+from postmanager.storage_base import StorageBase, ModelStorage
+
+
+class PostMetaData(ModelStorage):
+    def __init__(self, storage_proxy: StorageBase, id, attrs) -> None:
+        super().__init__(storage_proxy)
+
         self.id = id
         self._attrs_list = []
         self._init_attrs(attrs)
@@ -12,7 +17,10 @@ class PostMeta:
 
         return data
 
-    def update(self, meta_dict:dict):
+    def save(self):
+        self.save_json(self.to_json(), "meta.json")
+
+    def update(self, meta_dict: dict):
         for key, value in meta_dict.items():
             # Never update id
             if key == "id":
@@ -30,9 +38,9 @@ class PostMeta:
                 setattr(self, key, value)
 
     @staticmethod
-    def from_json(meta_dict: dict):
-        assert meta_dict.get('id') != None, "meta_dict object must contain an ID key"
+    def from_json(storage_proxy, meta_dict: dict):
+        assert meta_dict.get("id") != None, "meta_dict object must contain an ID key"
 
-        post_meta = PostMeta(meta_dict.get('id'), meta_dict)
+        post_meta = PostMetaData(storage_proxy, meta_dict.get("id"), meta_dict)
 
         return post_meta

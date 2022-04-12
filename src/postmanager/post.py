@@ -1,68 +1,96 @@
 import json
-from postmanager.proxy import BucketProxyBase
-from postmanager.meta import PostMeta
+from postmanager.media_data import MediaData
+
+from postmanager.storage_base import StorageBase, ModelStorage
+
+from postmanager.meta_data import PostMetaData
+from postmanager.exception import StorageProxyException
 
 
-class Post:
+class Post(ModelStorage):
     def __init__(
-        self, bucket_proxy: BucketProxyBase, meta_data: PostMeta, content="", image=None
+        self,
+        storage_proxy: StorageBase,
+        meta_data: PostMetaData,
+        content="",
     ) -> None:
+        super().__init__(storage_proxy)
+
+        # Base data
         self.id = meta_data.id
-        self.bucket_proxy = bucket_proxy
         self.meta_data = meta_data
-        self._content = content
-        self.image = image
 
-    @property
-    def title(self):
-        try:
-            return self.meta_data.title
-        except:
-            return 'No title found'
+        self._init_content(content)
+        self._init_media_data()
 
-    @title.setter
-    def title(self, title):
-        try:
-            self.meta_data.title = title
-        except:
-            pass
+    def to_json(self):
+        return {
+            "meta_data": self.meta_data.to_json(),
+            "content": self.content,
+            "media_index": self.media_index,
+        }
 
-    @property
-    def content(self):
-        try:
-            self._content = self.bucket_proxy.get_json("content.json")
-            return self._content
-        except Exception:
-            return "No content found"
+    # -----
+    # Update methods
+    # -----
 
-    @content.setter
-    def content(self, content):
-        self._content = content
+    def update_meta_data(self, meta_dict: dict):
+        self.meta_data.update(meta_dict)
+
+    def update_content(self, content):
+        self.content = content
 
     def save(self):
         # Save content
-        self.bucket_proxy.save_json("", "images/")
-        # Save meta
-        self.bucket_proxy.save_json(self.meta_data.to_json(), "meta.json")
-        self.bucket_proxy.save_json(self._content, "content.json")
+        self.save_json(self.content, "content.json")
 
-        # Save images, for image in images
-        if self.image != None:
-            self.bucket_proxy.save_bytes(self.image, f"images/template.jpg")
+        # Save meta data
+        self.meta_data.save()
 
-    def list_image_urls(self):
-        image_keys = self.bucket_proxy.list_dir(f"images/")
-        urls = [f"{self._base_image_url()}{image_key}" for image_key in image_keys]
-        return urls
+        # save media data
+        self.media_data.save()
 
-    def list_files(self):
-        return self.bucket_proxy.list_dir()
+    # -----
+    # Media methods
+    # -----
 
-    def to_json(self):
-        return {"meta_data": self.meta_data.to_json(), "content": self.content}
+    @property
+    def media_index(self):
+        return self.media_data.media_index
 
-    def _base_image_url(self):
-        return f"https://{self.bucket_proxy.bucket_name}.s3.amazonaws.com/"
+    def add_media(self, media_data, media_name, **kwargs):
+        self.media_data.add_media(media_data, media_name, **kwargs)
+
+    def remove_media(self, media_name):
+        self.media_data.remove_media(media_name)
+
+    def delete_media(self, media_name):
+        self.media_data.delete_media(media_name)
+
+    def get_media(self, media_name, **kwargs):
+        return self.media_data.get_media(media_name, **kwargs)
+
+    # -----
+    # Private methods
+    # -----
+
+    def _init_media_data(self):
+        media_data_root_dir = f"{self.get_root_dir()}media/"
+        media_storage_proxy = self.new_storage_proxy(media_data_root_dir)
+        media_data = MediaData(media_storage_proxy)
+        self.media_data = media_data
+
+    def _init_content(self, content):
+        if content:
+            self.content = content
+            return
+
+        try:
+            data = self.get_json(f"content.json")
+            self.content = data
+
+        except StorageProxyException:
+            self.content = ""
 
     def __str__(self):
         return json.dumps(self.meta_data.to_json(), indent=2)

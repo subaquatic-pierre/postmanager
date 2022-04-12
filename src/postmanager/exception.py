@@ -2,5 +2,5 @@ class PostManagerException(Exception):
     pass
 
 
-class BucketProxyException(Exception):
+class StorageProxyException(Exception):
     pass
