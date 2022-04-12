@@ -1,21 +1,23 @@
 import json
 from base64 import b64decode, b64encode
+from postmanager.media_data import MediaData
 
-import re
-from postmanager.storage_proxy import StorageProxyBase
-from postmanager.meta import PostMetaData
+from postmanager.storage_base import StorageBase
+from postmanager.storage_proxy import StorageProxy
+from postmanager.meta_data import PostMetaData
 from postmanager.exception import StorageProxyException
 
 
-class Post:
+class Post(StorageBase):
     def __init__(
         self,
-        storage_proxy: StorageProxyBase,
+        storage_proxy: StorageProxy,
         meta_data: PostMetaData,
         content="",
     ) -> None:
+        super().__init__(storage_proxy)
+
         self.id = meta_data.id
-        self.storage_proxy = storage_proxy
         self.meta_data = meta_data
         self.content = content
 
@@ -25,6 +27,13 @@ class Post:
 
         # Init data from storage
         self._init_post_data()
+
+    # Update methods
+    def update_meta_data(self, meta_dict: dict):
+        self.meta_data.update(meta_dict)
+
+    def update_content(self, content):
+        self.content = content
 
     def save(self):
         # Save content
@@ -129,7 +138,7 @@ class Post:
                 media_data = self.media_index[media_name]
 
                 # Delete image
-                self.storage_proxy.delete_object(media_data["filename"])
+                self.storage_proxy.delete_file(media_data["filename"])
 
                 # Update self image map
                 del self.media_index[media_name]

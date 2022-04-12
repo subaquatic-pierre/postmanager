@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, call
 
 from postmanager.manager import PostManager
 from postmanager.post import Post
-from postmanager.meta import PostMetaData
+from postmanager.meta_data import PostMetaData
 from postmanager.exception import StorageProxyException
 
 
@@ -42,7 +42,7 @@ class TestPostManager(TestCase):
 
     def test_list_all_files(self):
         self.storage_proxy.list_dir.return_value = []
-        all_posts = self.blog_manager.list_all_files()
+        all_posts = self.blog_manager.list_files()
 
         self.assertTrue(self.blog_manager.storage_proxy.list_dir.called)
         self.assertIsInstance(all_posts, list)
@@ -118,13 +118,13 @@ class TestPostManagerWithPost(TestCase):
 
     def test_create_meta_from_json(self):
         meta_dict = {"title": "Awesome Title"}
-        meta = self.blog_manager.create_meta(meta_dict)
+        meta = self.blog_manager.new_meta(meta_dict)
 
         self.assertEqual(meta.title, meta_dict.get("title"))
 
     def test_create_post(self):
         meta_dict = {"title": "Awesome Title"}
-        post_meta = self.blog_manager.create_meta(meta_dict)
+        post_meta = self.blog_manager.new_meta(meta_dict)
         post = self.blog_manager.create_post(post_meta, self.post_content)
 
         post_root_dir = f"{self.blog_manager.storage_proxy.root_dir}{post.id}/"
@@ -138,7 +138,7 @@ class TestPostManagerWithPost(TestCase):
 
     def test_save_post(self):
         data = {"title": "Coolest"}
-        post_meta: PostMetaData = self.blog_manager.create_meta(data)
+        post_meta: PostMetaData = self.blog_manager.new_meta(data)
         post = self.blog_manager.create_post(post_meta, {"data": "Amazing data"})
         post.save = MagicMock()
 
@@ -152,7 +152,7 @@ class TestPostManagerWithPost(TestCase):
 
     def test_save_post_error(self):
         data = {"title": "Coolest"}
-        post_meta: PostMetaData = self.blog_manager.create_meta(data)
+        post_meta: PostMetaData = self.blog_manager.new_meta(data)
         post: Post = self.blog_manager.create_post(post_meta, {"data": "Amazing data"})
         post.save = MagicMock(side_effect=Exception)
 
@@ -166,5 +166,5 @@ class TestPostManagerWithPost(TestCase):
 
     def test_delete_post(self):
         data = {"title": "Coolest"}
-        post_meta: PostMetaData = self.blog_manager.create_meta(data)
+        post_meta: PostMetaData = self.blog_manager.new_meta(data)
         post: Post = self.blog_manager.create_post(post_meta, {"data": "Amazing data"})

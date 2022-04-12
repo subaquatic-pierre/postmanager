@@ -1,7 +1,7 @@
 import json
 from abc import ABC, abstractmethod
 
-from postmanager.meta import PostMetaData
+from postmanager.meta_data import PostMetaData
 from postmanager.post import Post
 
 
@@ -114,7 +114,7 @@ class PostMethod(Method):
 
         try:
             title = meta_data.get("title")
-            post_meta: PostMetaData = self.post_manager.create_meta(title)
+            post_meta: PostMetaData = self.post_manager.new_meta(title)
             post: Post = self.post_manager.create_post(post_meta, content)
 
         except Exception as e:

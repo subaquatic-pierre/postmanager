@@ -7,7 +7,7 @@ from postmanager.config import setup_client
 from postmanager.exception import StorageProxyException
 
 
-class StorageProxyBase(ABC):
+class StorageProxy(ABC):
     @abstractmethod
     def get_json(self, *args, **kwargs):
         pass
@@ -25,7 +25,7 @@ class StorageProxyBase(ABC):
         pass
 
 
-class S3StorageProxyBase(StorageProxyBase):
+class S3StorageProxyBase(StorageProxy):
     def __init__(self, bucket_name, root_dir) -> None:
         self.bucket_name = bucket_name
         self.root_dir = root_dir
@@ -78,7 +78,7 @@ class S3StorageProxyBase(StorageProxyBase):
 
     # Extra S3 specific methods
 
-    def delete_object(self, filename):
+    def delete_file(self, filename):
         try:
             self.storage_interface.delete_object(
                 Bucket=self.bucket_name, Key=f"{self.root_dir}{filename}"
