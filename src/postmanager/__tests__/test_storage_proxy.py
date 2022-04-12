@@ -2,14 +2,14 @@ import json
 from unittest import TestCase
 from unittest.mock import MagicMock
 
-from postmanager.s3_storage_proxy import MockS3StorageProxy
+from postmanager.storage_proxy_s3 import MockStorageProxyS3
 from .utils import BUCKET_NAME, BUCKET_ROOT_DIR
 
 
 class StorageProxyTest(TestCase):
     def setUp(self) -> None:
         super().setUp()
-        self.bucket = MockS3StorageProxy(BUCKET_NAME, BUCKET_ROOT_DIR)
+        self.bucket = MockStorageProxyS3(BUCKET_NAME, BUCKET_ROOT_DIR)
 
     def test_get_json(self):
         object_key = "index.json"

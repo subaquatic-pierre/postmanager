@@ -1,13 +1,13 @@
+import json
 from typing import List
 from unittest.mock import MagicMock
-import json
+
 from postmanager.config import setup_client
-
 from postmanager.exception import StorageProxyException
-from postmanager.storage_base import StorageProxy
+from postmanager.storage_proxy import StorageProxy
 
 
-class S3StorageProxyBase(StorageProxy):
+class StorageProxyS3Base(StorageProxy):
     def __init__(self, bucket_name, root_dir) -> None:
         super().__init__(root_dir)
 
@@ -93,7 +93,7 @@ class S3StorageProxyBase(StorageProxy):
             raise StorageProxyException(f"Error listing files from bucket. {str(e)}")
 
 
-class MockS3StorageProxy(S3StorageProxyBase):
+class MockStorageProxyS3(StorageProxyS3Base):
     def __init__(self, bucket_name, root_dir, mock_config={}) -> None:
         super().__init__(bucket_name, root_dir)
 
@@ -112,7 +112,7 @@ class MockS3StorageProxy(S3StorageProxyBase):
         return object
 
 
-class S3StorageProxy(S3StorageProxyBase):
+class StorageProxyS3(StorageProxyS3Base):
     def __init__(self, bucket_name, root_dir) -> None:
         super().__init__(bucket_name, root_dir)
         self.storage_interface = setup_client()

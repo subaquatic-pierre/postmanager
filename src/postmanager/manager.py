@@ -4,14 +4,15 @@ from postmanager.post import Post
 from postmanager.http import Event
 
 from postmanager.exception import StorageProxyException, PostManagerException
-from postmanager.storage_base import ModelStorage, StorageProxy
-from postmanager.s3_storage_proxy import (
-    S3StorageProxy,
-    MockS3StorageProxy,
+from postmanager.storage_model import StorageModel
+from postmanager.storage_proxy import StorageProxy
+from postmanager.storage_proxy_s3 import (
+    StorageProxyS3,
+    MockStorageProxyS3,
 )
 
 
-class PostManager(ModelStorage):
+class PostManager(StorageModel):
     def __init__(self, storage_proxy: StorageProxy) -> None:
         super().__init__(storage_proxy)
         self._init_bucket()
@@ -180,13 +181,13 @@ class PostManager(ModelStorage):
         template = path.split("/")[1]
 
         if testing:
-            storage_proxy = MockS3StorageProxy(
+            storage_proxy = MockStorageProxyS3(
                 bucket_name=bucket_name,
                 root_dir=f"{template}/",
                 mock_config=mock_config,
             )
         else:
-            storage_proxy = S3StorageProxy(
+            storage_proxy = StorageProxyS3(
                 bucket_name=bucket_name,
                 root_dir=f"{template}/",
             )
@@ -197,7 +198,7 @@ class PostManager(ModelStorage):
 
     @staticmethod
     def setup_s3(bucket_name: str, template: str = "post"):
-        storage_proxy = S3StorageProxy(
+        storage_proxy = StorageProxyS3(
             bucket_name=bucket_name,
             root_dir=f"{template}/",
         )

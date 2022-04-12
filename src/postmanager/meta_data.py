@@ -1,7 +1,7 @@
-from postmanager.storage_base import StorageBase, ModelStorage
+from postmanager.storage_base import StorageBase, StorageModel
 
 
-class PostMetaData(ModelStorage):
+class PostMetaData(StorageModel):
     def __init__(self, storage_proxy: StorageBase, id, attrs) -> None:
         super().__init__(storage_proxy)
 
