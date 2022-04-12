@@ -120,11 +120,22 @@ class PostManager(StorageAdapter):
     def delete_post(self, id: int):
         id = int(id)
         post = self.get_by_id(id)
-        post_files = post.list_files()
 
-        # Add root dir to filenames
-        post_files.append(post.get_root_dir())
-        self.delete_files(post_files)
+        # TODO: Need fix
+        # Check storage_proxy, if local_storage,
+        # use special method on post for delete
+        # delete files algorithm needs to change
+        if self.storage_proxy_class_name == "StorageProxyLocal":
+            post.delete_self()
+
+        else:
+            # Loop over list and call delete
+            # on single
+            post_files = post.list_files()
+
+            # Add root dir to filenames
+            post_files.append(post.root_dir)
+            self.delete_files(post_files)
 
         # Update index
         new_index = [meta for meta in self.index if meta["id"] != id]
@@ -170,6 +181,7 @@ class PostManager(StorageAdapter):
         elif len(meta_data_list) == 0:
             raise PostManagerException(error_message)
 
+    # -----
     # Static methods
     # -----
 

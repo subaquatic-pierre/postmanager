@@ -22,6 +22,7 @@ class StorageProxyS3Base(StorageBase):
 
             object_json = json.loads(object["Body"].read())
             return object_json
+
         except Exception as e:
             raise StorageProxyException(f"Error fething JSON from bucket. {str(e)}")
 
@@ -32,6 +33,7 @@ class StorageProxyS3Base(StorageBase):
                 Key=f"{self.root_dir}{filename}",
                 Body=json.dumps(body),
             )
+
         except Exception as e:
             raise StorageProxyException(f"Error saving JSON to bucket. {str(e)}")
 
@@ -42,6 +44,7 @@ class StorageProxyS3Base(StorageBase):
                 Key=f"{self.root_dir}{filename}",
                 Body=bytes,
             )
+
         except Exception as e:
             raise StorageProxyException(f"Error saving bytes to bucket. {str(e)}")
 
@@ -62,6 +65,7 @@ class StorageProxyS3Base(StorageBase):
             self.storage_interface.delete_object(
                 Bucket=self.bucket_name, Key=f"{self.root_dir}{filename}"
             )
+
         except Exception as e:
             raise StorageProxyException(f"Error deleting object from bucket. {str(e)}")
 
@@ -72,10 +76,11 @@ class StorageProxyS3Base(StorageBase):
                 self.storage_interface.delete_objects(
                     Bucket=self.bucket_name, Delete={"Objects": objects}
                 )
+
         except Exception as e:
             raise StorageProxyException(f"Error deleting files from bucket. {str(e)}")
 
-    def list_files(self, dir: str = "") -> List[dict]:
+    def list_files(self) -> List[dict]:
         try:
             list_response = self.storage_interface.list_objects_v2(
                 Bucket=self.bucket_name
@@ -88,6 +93,7 @@ class StorageProxyS3Base(StorageBase):
                 and obj["Key"] != f"{self.root_dir}{dir}"
             ]
             return object_keys
+
         except Exception as e:
             raise StorageProxyException(f"Error listing files from bucket. {str(e)}")
 

@@ -1,4 +1,6 @@
 import json
+import shutil
+from pathlib import Path
 from postmanager.media_data import MediaData
 
 from postmanager.storage_base import StorageBase
@@ -50,6 +52,10 @@ class Post(StorageAdapter):
         # save media data
         self.media_data.save()
 
+    def delete_self(self):
+        filepath = self.root_dir
+        shutil.rmtree(filepath, ignore_errors=True)
+
     # -----
     # Media methods
     # -----
@@ -75,7 +81,7 @@ class Post(StorageAdapter):
     # -----
 
     def _init_media_data(self):
-        media_data_root_dir = f"{self.get_root_dir()}media/"
+        media_data_root_dir = f"{self.root_dir}media/"
         media_storage_proxy = self.new_storage_proxy(media_data_root_dir)
         media_data = MediaData(media_storage_proxy)
         self.media_data = media_data
