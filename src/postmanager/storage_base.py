@@ -49,31 +49,31 @@ class ModelStorage(StorageBase):
     def __init__(self, storage_proxy: StorageProxy) -> None:
         self.storage_proxy = storage_proxy
 
-    def save_json(self, body: dict, filename: str):
+    def save_json(self, body: dict, filename: str) -> None:
         self.storage_proxy.save_json(body, filename)
 
-    def get_json(self, filename):
+    def get_json(self, filename) -> dict:
         return self.storage_proxy.get_json(filename)
 
-    def save_bytes(self, bytes: bytes, filename: str):
+    def save_bytes(self, bytes: bytes, filename: str) -> None:
         self.storage_proxy.save_bytes(bytes, filename)
 
-    def get_bytes(self, filename: str):
-        self.storage_proxy.save_bytes(filename)
+    def get_bytes(self, filename: str) -> bytes:
+        return self.storage_proxy.get_bytes(filename)
 
     def list_files(self) -> List[dict]:
         return self.storage_proxy.list_files()
 
-    def delete_files(self, filenames):
+    def delete_files(self, filenames) -> None:
         self.storage_proxy.delete_files(filenames)
 
-    def delete_file(self, filename):
+    def delete_file(self, filename) -> None:
         self.storage_proxy.delete_file(filename)
 
-    def get_root_dir(self):
+    def get_root_dir(self) -> str:
         return self.storage_proxy.root_dir
 
-    def new_storage_proxy(self, new_root: str, mock_config={}):
+    def new_storage_proxy(self, new_root: str, mock_config={}) -> StorageProxy:
 
         # Import storage proxies
         from postmanager.s3_storage_proxy import (

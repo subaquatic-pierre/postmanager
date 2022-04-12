@@ -68,7 +68,7 @@ class Post(ModelStorage):
         self.media_data.delete_media(media_name)
 
     def get_media(self, media_name, **kwargs):
-        self.media_data.get_media(media_name, **kwargs)
+        return self.media_data.get_media(media_name, **kwargs)
 
     # -----
     # Private methods

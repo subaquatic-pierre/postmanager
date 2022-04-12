@@ -1,3 +1,4 @@
+from typing import List
 from postmanager.meta_data import PostMetaData
 from postmanager.post import Post
 from postmanager.http import Event
@@ -32,7 +33,7 @@ class PostManager(ModelStorage):
         meta_dict_list = [
             meta_data for meta_data in self.index if meta_data["id"] == id
         ]
-        self._verify_meta(meta_dict_list[0], "No blog with that ID found")
+        self._verify_meta(meta_dict_list, "No blog with that ID found")
 
         # Build meta
         meta_data = self.build_meta_data(meta_dict_list[0])
@@ -96,8 +97,7 @@ class PostManager(ModelStorage):
             is_new_post = True
             for index, meta_json in enumerate(self.index):
                 # Mathing meta found in index
-                meta = PostMetaData.from_json(meta_json)
-                if meta.id == post.meta_data.id:
+                if meta_json["id"] == post.meta_data.id:
                     # Set new post flag to false
                     is_new_post = False
 
@@ -162,10 +162,10 @@ class PostManager(ModelStorage):
         except StorageProxyException:
             self.save_json({"latest_id": 0}, "latest_id.json")
 
-    def _verify_meta(self, meta, error_message):
-        if len(meta) > 1:
+    def _verify_meta(self, meta_data_list: List[dict], error_message):
+        if len(meta_data_list) > 1:
             raise PostManagerException("More than one blog with that ID found")
-        elif len(meta) == 0:
+        elif len(meta_data_list) == 0:
             raise PostManagerException(error_message)
 
     # Static methods
