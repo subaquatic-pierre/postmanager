@@ -1,37 +1,17 @@
-from abc import ABC, abstractmethod
+from typing import List
 from unittest.mock import MagicMock
 import json
 from postmanager.config import setup_client
 
-
 from postmanager.exception import StorageProxyException
-
-
-class StorageProxy(ABC):
-    @abstractmethod
-    def get_json(self, *args, **kwargs):
-        pass
-
-    @abstractmethod
-    def save_json(self, *args, **kwargs):
-        pass
-
-    @abstractmethod
-    def save_bytes(self, *args, **kwargs):
-        pass
-
-    @abstractmethod
-    def get_bytes(self, *args, **kwargs):
-        pass
+from postmanager.storage_base import StorageProxy
 
 
 class S3StorageProxyBase(StorageProxy):
     def __init__(self, bucket_name, root_dir) -> None:
-        self.bucket_name = bucket_name
-        self.root_dir = root_dir
-        self._verify_root_dir()
+        super().__init__(root_dir)
 
-    # Required interface methods
+        self.bucket_name = bucket_name
 
     def get_json(self, filename):
         try:
@@ -54,17 +34,17 @@ class S3StorageProxyBase(StorageProxy):
         except Exception as e:
             raise StorageProxyException(f"Error saving JSON to bucket. {str(e)}")
 
-    def save_bytes(self, body: bytes, filename: str):
+    def save_bytes(self, bytes: bytes, filename: str) -> None:
         try:
             self.storage_interface.put_object(
                 Bucket=self.bucket_name,
                 Key=f"{self.root_dir}{filename}",
-                Body=body,
+                Body=bytes,
             )
         except Exception as e:
             raise StorageProxyException(f"Error saving bytes to bucket. {str(e)}")
 
-    def get_bytes(self, filename: str):
+    def get_bytes(self, filename: str) -> bytes:
         try:
             object = self.storage_interface.get_object(
                 Bucket=self.bucket_name, Key=f"{self.root_dir}{filename}"
@@ -78,7 +58,7 @@ class S3StorageProxyBase(StorageProxy):
 
     # Extra S3 specific methods
 
-    def delete_file(self, filename):
+    def delete_file(self, filename: str) -> None:
         try:
             self.storage_interface.delete_object(
                 Bucket=self.bucket_name, Key=f"{self.root_dir}{filename}"
@@ -86,7 +66,7 @@ class S3StorageProxyBase(StorageProxy):
         except Exception as e:
             raise StorageProxyException(f"Error deleting object from bucket. {str(e)}")
 
-    def delete_files(self, filenames):
+    def delete_files(self, filenames: List[str]):
         try:
             if len(filenames) > 0:
                 objects = [{"Key": filename} for filename in filenames]
@@ -96,7 +76,7 @@ class S3StorageProxyBase(StorageProxy):
         except Exception as e:
             raise StorageProxyException(f"Error deleting files from bucket. {str(e)}")
 
-    def list_dir(self, dir: str = ""):
+    def list_files(self, dir: str = "") -> List[dict]:
         try:
             list_response = self.storage_interface.list_objects_v2(
                 Bucket=self.bucket_name
@@ -112,18 +92,12 @@ class S3StorageProxyBase(StorageProxy):
         except Exception as e:
             raise StorageProxyException(f"Error listing files from bucket. {str(e)}")
 
-    # Private methods
-
-    def _verify_root_dir(self):
-        try:
-            assert self.root_dir.endswith("/")
-        except:
-            self.root_dir = f"{self.root_dir}/"
-
 
 class MockS3StorageProxy(S3StorageProxyBase):
     def __init__(self, bucket_name, root_dir, mock_config={}) -> None:
         super().__init__(bucket_name, root_dir)
+
+        # Set mocks
         self.storage_interface = MagicMock()
         mock_attrs = {"get_object.return_value": self.create_object_mock()}
         self.storage_interface.configure_mock(**mock_attrs)

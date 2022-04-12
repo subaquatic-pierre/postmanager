@@ -1,0 +1,2 @@
+class LocalStorageProxy:
+    pass

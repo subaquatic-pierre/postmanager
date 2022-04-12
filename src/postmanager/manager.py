@@ -1,17 +1,17 @@
+from typing import List
 from postmanager.meta_data import PostMetaData
 from postmanager.post import Post
 from postmanager.http import Event
 
-from postmanager.storage_base import StorageBase
-from postmanager.storage_proxy import (
-    StorageProxy,
+from postmanager.exception import StorageProxyException, PostManagerException
+from postmanager.storage_base import ModelStorage, StorageProxy
+from postmanager.s3_storage_proxy import (
     S3StorageProxy,
     MockS3StorageProxy,
 )
-from postmanager.exception import StorageProxyException, PostManagerException
 
 
-class PostManager(StorageBase):
+class PostManager(ModelStorage):
     def __init__(self, storage_proxy: StorageProxy) -> None:
         super().__init__(storage_proxy)
         self._init_bucket()
@@ -30,18 +30,27 @@ class PostManager(StorageBase):
     def get_by_id(self, id) -> Post:
         id = int(id)
 
-        meta = [meta_data for meta_data in self.index if meta_data["id"] == id]
-        self._verify_meta(meta, "No blog with that ID found")
+        meta_dict_list = [
+            meta_data for meta_data in self.index if meta_data["id"] == id
+        ]
+        self._verify_meta(meta_dict_list, "No blog with that ID found")
 
-        post_meta = PostMetaData.from_json(meta[0])
+        # Build meta
+        meta_data = self.build_meta_data(meta_dict_list[0])
 
-        post = self.build_post(post_meta)
+        # Build post
+        post = self.build_post(meta_data)
 
         return post
 
+    def build_meta_data(self, meta_dict: dict):
+        storage_proxy = self.new_storage_proxy(f"{meta_dict['id']}/")
+        post_meta_data = PostMetaData.from_json(storage_proxy, meta_dict)
+        return post_meta_data
+
     def build_post(self, post_meta: PostMetaData, content="") -> Post:
-        new_storage_proxy = self.new_storage_proxy(f"{post_meta.id}/")
-        post = Post(new_storage_proxy, post_meta, content=content)
+        storage_proxy = self.new_storage_proxy(f"{post_meta.id}/")
+        post = Post(storage_proxy, post_meta, content=content)
 
         return post
 
@@ -56,8 +65,7 @@ class PostManager(StorageBase):
     # Post new methods
     # -----
 
-    def new_meta(self, meta_dict: dict) -> PostMetaData:
-
+    def new_meta_data(self, meta_dict: dict) -> PostMetaData:
         # Add ID to meta if not exists
         post_id = meta_dict.get("id", False)
 
@@ -65,11 +73,12 @@ class PostManager(StorageBase):
             new_id = self.new_post_id()
             meta_dict["id"] = new_id
 
-        new_meta = PostMetaData.from_json(meta_dict)
-        return new_meta
+        new_storage_proxy = self.new_storage_proxy(f"{meta_dict['id']}/")
+        new_meta_data = PostMetaData.from_json(new_storage_proxy, meta_dict)
+        return new_meta_data
 
     def new_post(self, post_meta: dict, content="") -> Post:
-        new_post_meta = self.new_meta(post_meta)
+        new_post_meta = self.new_meta_data(post_meta)
 
         post_storage_proxy = self.new_storage_proxy(f"{new_post_meta.id}/")
         post = Post(post_storage_proxy, new_post_meta, content=content)
@@ -88,8 +97,7 @@ class PostManager(StorageBase):
             is_new_post = True
             for index, meta_json in enumerate(self.index):
                 # Mathing meta found in index
-                meta = PostMetaData.from_json(meta_json)
-                if meta.id == post.meta_data.id:
+                if meta_json["id"] == post.meta_data.id:
                     # Set new post flag to false
                     is_new_post = False
 
@@ -154,10 +162,10 @@ class PostManager(StorageBase):
         except StorageProxyException:
             self.save_json({"latest_id": 0}, "latest_id.json")
 
-    def _verify_meta(self, meta, error_message):
-        if len(meta) > 1:
+    def _verify_meta(self, meta_data_list: List[dict], error_message):
+        if len(meta_data_list) > 1:
             raise PostManagerException("More than one blog with that ID found")
-        elif len(meta) == 0:
+        elif len(meta_data_list) == 0:
             raise PostManagerException(error_message)
 
     # Static methods

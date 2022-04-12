@@ -2,7 +2,7 @@ import json
 from unittest import TestCase
 from unittest.mock import MagicMock
 
-from postmanager.storage_proxy import MockS3StorageProxy
+from postmanager.s3_storage_proxy import MockS3StorageProxy
 from .utils import BUCKET_NAME, BUCKET_ROOT_DIR
 
 
