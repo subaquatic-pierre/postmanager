@@ -8,8 +8,8 @@ from postmanager.interface import StorageProxy
 
 
 class StorageProxyLocal(StorageProxy):
-    def __init__(self, root_dir: str, config={}) -> None:
-        super().__init__(open)
+    def __init__(self, root_dir: str, client, config={}) -> None:
+        super().__init__(client)
         self.config = config
 
         self._init_root_dir(root_dir)

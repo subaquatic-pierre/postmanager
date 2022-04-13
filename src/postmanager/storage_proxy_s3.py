@@ -2,12 +2,12 @@ import json
 from typing import List
 from unittest.mock import MagicMock
 
-from postmanager.config import setup_client
+from postmanager.config import setup_s3_client
 from postmanager.exception import StorageProxyException
 from postmanager.interface import StorageProxy
 
 
-class StorageProxyS3Base(StorageProxy):
+class StorageProxyS3(StorageProxy):
     def __init__(self, bucket_name, root_dir, client) -> None:
         super().__init__(client)
 
@@ -90,10 +90,9 @@ class StorageProxyS3Base(StorageProxy):
             self.root_dir = f"{self.root_dir}/"
 
 
-class StorageProxyS3(StorageProxyS3Base):
-    def __init__(self, bucket_name, root_dir) -> None:
-        client = setup_client()
-        super().__init__(bucket_name, root_dir, client)
+# class StorageProxyS3(StorageProxyS3Base):
+#     def __init__(self, bucket_name, root_dir, client) -> None:
+#         super().__init__(bucket_name, root_dir, client)
 
 
 # ----------
@@ -103,24 +102,16 @@ class StorageProxyS3(StorageProxyS3Base):
 # ----------
 
 
-class StreamingBodyMock:
-    def __init__(self, config) -> None:
-        self.config = config
+# class MockStorageProxyS3(StorageProxyS3Base):
+#     def __init__(self, bucket_name, root_dir, mock_config={}) -> None:
+#         client = MagicMock()
 
-    def read(self):
-        default_return_value = {"test": "ok"}
-        return_value = self.config.get("get_object_return_value", default_return_value)
-        return json.dumps(return_value)
+#         super().__init__(bucket_name, root_dir, client)
 
+#         self._init_mock(mock_config)
 
-class MockStorageProxyS3(StorageProxyS3Base):
-    def __init__(self, bucket_name, root_dir, mock_config={}) -> None:
-        client = MagicMock()
-
-        super().__init__(bucket_name, root_dir, client)
-
-        self._init_mock(mock_config)
-
-    def _init_mock(self, mock_config):
-        mock_attrs = {"get_object.return_value": StreamingBodyMock(mock_config)}
-        self.client.configure_mock(**mock_attrs)
+#     def _init_mock(self, mock_config):
+#         mock_attrs = {
+#             "get_object.return_value":
+#         }
+#         self.client.configure_mock(**mock_attrs)

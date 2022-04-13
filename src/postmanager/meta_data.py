@@ -1,9 +1,9 @@
-from postmanager.storage_interface import StorageInterface
+from postmanager.interface import StorageProxy
 from postmanager.storage_adapter import StorageAdapter
 
 
 class PostMetaData(StorageAdapter):
-    def __init__(self, storage_proxy: StorageInterface, id, attrs) -> None:
+    def __init__(self, storage_proxy: StorageProxy, id, attrs) -> None:
         super().__init__(storage_proxy)
 
         self.id = id

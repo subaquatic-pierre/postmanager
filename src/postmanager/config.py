@@ -2,7 +2,7 @@ import boto3
 from botocore.config import Config
 
 
-def setup_client(credentials={}, client_config={}):
+def setup_s3_client(credentials={}, client_config={}):
     default_config = Config(
         connect_timeout=5, read_timeout=60, retries={"max_attempts": 2}
     )

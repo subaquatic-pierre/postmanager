@@ -1,9 +1,8 @@
 import json
 import shutil
-from pathlib import Path
-from postmanager.media_data import MediaData
 
-from postmanager.storage_interface import StorageInterface
+from postmanager.media_data import MediaData
+from postmanager.interface import StorageProxy
 from postmanager.storage_adapter import StorageAdapter
 from postmanager.meta_data import PostMetaData
 from postmanager.exception import StorageProxyException
@@ -12,7 +11,7 @@ from postmanager.exception import StorageProxyException
 class Post(StorageAdapter):
     def __init__(
         self,
-        storage_proxy: StorageInterface,
+        storage_proxy: StorageProxy,
         meta_data: PostMetaData,
         content="",
     ) -> None:

@@ -1,11 +1,11 @@
-from postmanager.storage_interface import StorageInterface
+from postmanager.interface import StorageInterface, StorageProxy
 from postmanager.storage_adapter import StorageAdapter
 from postmanager.exception import StorageProxyException
 from base64 import b64decode, b64encode
 
 
 class MediaData(StorageAdapter):
-    def __init__(self, storage_proxy: StorageInterface) -> None:
+    def __init__(self, storage_proxy: StorageProxy) -> None:
         super().__init__(storage_proxy)
 
         self._unsaved_media = {}

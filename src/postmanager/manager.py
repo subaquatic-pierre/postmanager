@@ -1,20 +1,20 @@
 from typing import List
+from unittest.mock import MagicMock
+from postmanager.config import setup_s3_client
 from postmanager.meta_data import PostMetaData
 from postmanager.post import Post
 from postmanager.http import Event
 
+from postmanager.config import setup_s3_client
 from postmanager.exception import StorageProxyException, PostManagerException
-from postmanager.storage_interface import StorageInterface
+from postmanager.interface import StorageProxy
 from postmanager.storage_adapter import StorageAdapter
 from postmanager.storage_proxy_local import StorageProxyLocal
-from postmanager.storage_proxy_s3 import (
-    StorageProxyS3,
-    MockStorageProxyS3,
-)
+from postmanager.storage_proxy_s3 import StorageProxyS3
 
 
 class PostManager(StorageAdapter):
-    def __init__(self, storage_proxy: StorageInterface) -> None:
+    def __init__(self, storage_proxy: StorageProxy) -> None:
         super().__init__(storage_proxy)
         self._init_bucket()
 
@@ -191,20 +191,16 @@ class PostManager(StorageAdapter):
         bucket_name = event.bucket_name
         path = event.path
         testing = event.testing
-        mock_config = event.mock_config
         template = path.split("/")[1]
 
         if testing:
-            storage_proxy = MockStorageProxyS3(
-                bucket_name=bucket_name,
-                root_dir=f"{template}/",
-                mock_config=mock_config,
-            )
+            client = MagicMock()
         else:
-            storage_proxy = StorageProxyS3(
-                bucket_name=bucket_name,
-                root_dir=f"{template}/",
-            )
+            client = setup_s3_client()
+
+        storage_proxy = StorageProxyS3(
+            bucket_name=bucket_name, root_dir=f"{template}/", client=client
+        )
 
         post_manager = PostManager(storage_proxy)
 
@@ -213,8 +209,7 @@ class PostManager(StorageAdapter):
     @staticmethod
     def setup_s3(bucket_name: str, template: str = "post"):
         storage_proxy = StorageProxyS3(
-            bucket_name=bucket_name,
-            root_dir=f"{template}/",
+            bucket_name=bucket_name, root_dir=f"{template}/", client=setup_s3_client()
         )
 
         post_manager = PostManager(storage_proxy)
@@ -222,7 +217,15 @@ class PostManager(StorageAdapter):
 
     @staticmethod
     def setup_local(template: str = "post"):
-        storage_proxy = StorageProxyLocal(root_dir=f"{template}/")
+        storage_proxy = StorageProxyLocal(root_dir=f"{template}/", client=open)
+
+        post_manager = PostManager(storage_proxy)
+        return post_manager
+
+    @staticmethod
+    def setup_mock_proxy():
+
+        storage_proxy = MagicMock()
 
         post_manager = PostManager(storage_proxy)
         return post_manager
