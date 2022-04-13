@@ -1,199 +1,301 @@
 from unittest import TestCase
 from unittest.mock import MagicMock, call
+from postmanager.storage_proxy_local import StorageProxyLocal
 
-from tests.utils import create_mock_post
+from tests.mocks import (
+    create_mock_meta,
+    create_mock_post,
+    create_manager_with_mock_proxy,
+)
 
-from postmanager.manager import PostManager
 from postmanager.post import Post
 from postmanager.meta_data import PostMetaData
 
-from postmanager.exception import StorageProxyException
+from postmanager.exception import StorageProxyException, PostManagerException
 
 
-class TestPostManagerMockStorageProxy(TestCase):
+class TestPostManager(TestCase):
     """
     Test case with MagicMock as storage_proxy attribute. no storage_proxy attributes tested.
     Tests check validity of expected return values from storage_proxy. Test basic functionality
     of methods
     """
 
-    def setUp(self) -> None:
-        super().setUp()
-
-        self.blog_manager = PostManager.setup_mock_proxy()
-
-    def test_get_by_id(self):
-        self.blog_manager._verify_meta = MagicMock()
-        self.blog_manager.build_meta_data = MagicMock()
-        self.blog_manager.build_post = MagicMock(return_value=create_mock_post())
+    def test_index(self):
+        manager = create_manager_with_mock_proxy()
+        index_json = [
+            {"id": 1, "title": "First Post", "template": "post"},
+            {"id": 2, "title": "Second Post", "template": "post"},
+        ]
+        manager.storage_proxy.get_json.return_value = index_json
 
         # Call
-        post = self.blog_manager.get_by_id(0)
+        index = manager.index
 
         # Assert
-        self.blog_manager.storage_proxy.get_json.assert_called()
-        self.blog_manager._verify_meta.assert_called()
+        manager.storage_proxy.get_json.assert_called()
+        self.assertEqual(len(index), 2)
+        self.assertEqual(index[0]["title"], "First Post")
+
+    def test_update_index(self):
+        manager = create_manager_with_mock_proxy()
+        new_index = [
+            {"id": 1, "title": "First Post", "template": "post"},
+            {"id": 2, "title": "Second Post", "template": "post"},
+        ]
+
+        # Call
+        manager.update_index(new_index)
+
+        # Assert
+        manager.storage_proxy.save_json.assert_called_with(new_index, "index.json")
+
+    def test_get_by_id(self):
+        manager = create_manager_with_mock_proxy()
+        index = [
+            {"id": 1, "title": "First Post", "template": "post"},
+            {"id": 2, "title": "Second Post", "template": "post"},
+        ]
+        manager.storage_proxy.get_json.return_value = index
+        manager._verify_meta = MagicMock()
+        manager.build_meta_data = MagicMock()
+        manager.build_post = MagicMock(return_value=create_mock_post())
+
+        # Call
+        post = manager.get_by_id(1)
+
+        # Assert
+        manager.storage_proxy.get_json.assert_called()
+        manager._verify_meta.assert_called()
         self.assertIsInstance(post, Post)
-        self.assertEqual(post.id, 0)
+        self.assertEqual(post.id, 1)
+
+    def test_build_meta_data(self):
+        manager = create_manager_with_mock_proxy()
+        meta_dict = {"id": 1, "title": "Cool Title"}
+
+        # Call
+        meta_data = manager.build_meta_data(meta_dict)
+
+        # Assert
+        self.assertIsInstance(meta_data, PostMetaData)
+        self.assertEqual(meta_data.title, "Cool Title")
+        self.assertEqual(meta_data.id, 1)
+
+    def test_build_post(self):
+        manager = create_manager_with_mock_proxy()
+        meta_data = create_mock_meta(1)
+        post_content = {"Cool": "Content"}
+
+        # Call
+        post = manager.build_post(meta_data, post_content)
+
+        # Assert
+        self.assertEqual(post.id, 1)
+        self.assertEqual(post.content, post_content)
+
+    def test_title_to_id(self):
+        manager = create_manager_with_mock_proxy()
+        index_json = [
+            {"id": 1, "title": "First Post", "template": "post"},
+            {"id": 2, "title": "Second Post", "template": "post"},
+        ]
+        manager._verify_meta = MagicMock()
+        manager.storage_proxy.get_json.return_value = index_json
+
+        # Call
+        post_id = manager.title_to_id("First Post")
+
+        # Assert
+        self.assertEqual(post_id, 1)
+
+    def get_post_content(self):
+        manager = create_manager_with_mock_proxy()
+        post_content = {"Cool": "Content"}
+        manager.storage_proxy.get_json.return_value = post_content
+
+        # Call
+        content = manager.get_post_content(1)
+
+        # Assert
+        self.assertEqual(content, post_content)
+
+    def test_new_post_id(self):
+        manager = create_manager_with_mock_proxy()
+        manager.storage_proxy.get_json.return_value = {"latest_id": 0}
+
+        # Call
+        new_id = manager.new_post_id()
+
+        # Assert
+        self.assertEqual(new_id, 0)
 
     def test_new_meta_data_with_id(self):
-        self.blog_manager.new_post_id = MagicMock()
+        manager = create_manager_with_mock_proxy()
+        manager.new_post_id = MagicMock()
         meta_dict = {"id": 1, "title": "Awesome Title"}
 
         # Call
-        meta = self.blog_manager.new_meta_data(meta_dict)
+        meta = manager.new_meta_data(meta_dict)
 
         # Assert
-        self.blog_manager.new_post_id.assert_not_called()
-        self.blog_manager.storage_proxy.get_json.assert_called()
+        manager.new_post_id.assert_not_called()
+        manager.storage_proxy.get_json.assert_called()
         self.assertEqual(meta.title, meta_dict.get("title"))
 
     def test_new_meta_data_without_id(self):
-        self.blog_manager.new_post_id = MagicMock(return_value=0)
+        manager = create_manager_with_mock_proxy()
+        manager.new_post_id = MagicMock(return_value=0)
         meta_dict = {"title": "Awesome Title"}
 
         # Call
-        meta_data = self.blog_manager.new_meta_data(meta_dict)
+        meta_data = manager.new_meta_data(meta_dict)
 
         # Assert
-        self.blog_manager.new_post_id.assert_called()
+        manager.new_post_id.assert_called()
         self.assertEqual(meta_data.title, meta_dict.get("title"))
         self.assertEqual(meta_data.id, 0)
 
-    def test_new_post_id(self):
-        self.blog_manager.storage_proxy.get_json.return_value = {"latest_id": 0}
-        new_id = self.blog_manager.new_post_id()
-
-        self.assertEqual(new_id, 0)
-
     def test_new_post(self):
+        manager = create_manager_with_mock_proxy()
         post_content = {"blocks": "Cool post content"}
         meta_dict = {"title": "Awesome Title"}
+        manager.storage_proxy.root_dir = "test/"
+        manager.new_post_id = MagicMock(return_value=0)
 
-        self.blog_manager.storage_proxy.root_dir = "test/"
-        self.blog_manager.new_post_id = MagicMock(return_value=0)
-        post = self.blog_manager.new_post(meta_dict, post_content)
+        # Call
+        post = manager.new_post(meta_dict, post_content)
 
+        # Assert
         self.assertEqual(post.meta_data.title, meta_dict["title"])
         self.assertEqual(post.content, post_content)
 
-    def test_save_post(self):
-        data = {"title": "Coolest"}
-        post_meta: PostMetaData = self.blog_manager.new_meta(data)
-        post = self.blog_manager.create_post(post_meta, {"data": "Amazing data"})
-        post.save = MagicMock()
+    # ----------- FAILED ---------------
 
-        self.blog_manager._update_index = MagicMock()
+    def test_save_post_new(self):
+        manager = create_manager_with_mock_proxy()
+        new_post_meta_dict = {"id": 5, "title": "Cool Title"}
+        index_json = [
+            {"id": 1, "title": "First Post", "template": "post"},
+            {"id": 2, "title": "Second Post", "template": "post"},
+        ]
+        new_post = create_mock_post(post_id=5)
+        new_post.save = MagicMock()
+        manager.update_index = MagicMock()
+        manager.storage_proxy.get_json.return_value = index_json
 
-        return_value = self.blog_manager.save_post(post)
+        # Call
+        returned_post = manager.save_post(new_post)
 
-        self.blog_manager._update_index.assert_called()
-        post.save.assert_called_once()
-        self.assertEqual(post, return_value)
+        # Assert
+        index_json.append(new_post_meta_dict)
+        manager.update_index.assert_called_with(index_json)
+        new_post.save.assert_called_once()
+        self.assertEqual(returned_post, new_post)
+
+    def test_save_post_update(self):
+        manager = create_manager_with_mock_proxy()
+        index_json = [
+            {"id": 1, "title": "First Post", "template": "post"},
+            {"id": 2, "title": "Second Post", "template": "post"},
+        ]
+        updated_index_json = [
+            {"id": 1, "title": "Cool Title"},
+            {"id": 2, "title": "Second Post", "template": "post"},
+        ]
+        new_post = create_mock_post(post_id=1)
+        new_post.save = MagicMock()
+        manager.update_index = MagicMock()
+        manager.storage_proxy.get_json.return_value = index_json
+
+        # Call
+        returned_post = manager.save_post(new_post)
+
+        # Assert
+        manager.update_index.assert_called_with(updated_index_json)
+        self.assertEqual(returned_post, new_post)
 
     def test_save_post_error(self):
-        data = {"title": "Coolest"}
-        post_meta: PostMetaData = self.blog_manager.new_meta(data)
-        post: Post = self.blog_manager.create_post(post_meta, {"data": "Amazing data"})
-        post.save = MagicMock(side_effect=Exception)
+        manager = create_manager_with_mock_proxy()
+        index_json = [
+            {"id": 1, "title": "First Post", "template": "post"},
+            {"id": 2, "title": "Second Post", "template": "post"},
+        ]
+        new_post = create_mock_post(post_id=1)
+        new_post.save = MagicMock(side_effect=Exception)
+        manager.update_index = MagicMock()
+        manager.storage_proxy.get_json.return_value = index_json
 
-        self.blog_manager._update_index = MagicMock()
+        # Call
+        # Assert
+        with self.assertRaises(PostManagerException) as e:
+            manager.save_post(new_post)
 
-        with self.assertRaises(Exception) as e:
-            self.blog_manager.save_post(post)
+        manager.update_index.assert_not_called()
+        self.assertIn(f"Post could not be saved, ", str(e.exception))
 
-        self.blog_manager._update_index.assert_not_called()
-        self.assertEqual(str(e.exception), f"Post could not be saved, ")
+    def test_delete_post_local_proxy(self):
+        index_json = [
+            {"id": 1, "title": "First Post", "template": "post"},
+            {"id": 2, "title": "Second Post", "template": "post"},
+        ]
+        manager = create_manager_with_mock_proxy()
+        manager.storage_proxy = StorageProxyLocal("test", MagicMock())
+        manager.storage_proxy.get_json = MagicMock(return_value=index_json)
+        manager.storage_proxy.delete_directory = MagicMock()
+        manager.update_index = MagicMock()
+
+        # Call
+        manager.delete_post(1)
+
+        # Assert
+        manager.storage_proxy.delete_directory.assert_called_once()
+        manager.update_index.assert_called_once()
 
     def test_delete_post(self):
-        data = {"title": "Coolest"}
-        post_meta: PostMetaData = self.blog_manager.new_meta(data)
-        post: Post = self.blog_manager.create_post(post_meta, {"data": "Amazing data"})
+        manager = create_manager_with_mock_proxy()
+        post = create_mock_post()
+        post.list_files = MagicMock(return_value=["first.txt"])
+        post.storage_proxy.root_dir = "test"
+        post.delete_file = MagicMock()
+        manager.get_by_id = MagicMock(return_value=post)
+        manager.delete_file = MagicMock()
 
+        # Call
+        manager.delete_post(1)
 
-class TestPostManager(TestCase):
-    def setUp(self) -> None:
-        super().setUp()
+        # Assert
+        post.delete_file.assert_called_once()
+        manager.delete_file.assert_called_once()
 
-        self.storage_proxy = MagicMock()
-        self.blog_manager = PostManager(self.storage_proxy)
-
-    def test_manager_init_success(self):
-        storage_proxy = MagicMock()
-        blog_manager = PostManager(storage_proxy)
-
-        expected_calls = [call("index.json"), call("latest_id.json")]
-        call_list = blog_manager.storage_proxy.get_json.call_args_list
-        self.assertEqual(call_list, expected_calls)
-
-    def test_manager_init_setup(self):
-        storage_proxy = MagicMock()
-        storage_proxy.get_json.side_effect = StorageProxyException()
-        blog_manager = PostManager(storage_proxy)
-
-        expected_calls = [
-            call([], "index.json"),
-            call({"latest_id": 0}, "latest_id.json"),
+    def test_get_meta_data(self):
+        manager = create_manager_with_mock_proxy()
+        index_json = [
+            {"id": 1, "title": "First Post", "template": "post"},
+            {"id": 2, "title": "Second Post", "template": "post"},
         ]
-        call_list = blog_manager.storage_proxy.save_json.call_args_list
-        self.assertEqual(call_list, expected_calls)
+        manager.storage_proxy.get_json.return_value = index_json
 
-    def test_get_index(self):
-        self.storage_proxy.get_json.return_value = []
-        index = self.blog_manager.index
-        self.blog_manager.storage_proxy.get_json.assert_called_with("index.json")
-        self.assertIsInstance(index, list)
+        # Call
+        meta_data = manager.get_meta_data(1)
 
-    def test_list_all_files(self):
-        self.storage_proxy.list_files.return_value = []
-        all_posts = self.blog_manager.list_files()
+        # Assert
+        self.assertEqual(meta_data.id, 1)
+        self.assertIsInstance(meta_data, PostMetaData)
 
-        self.assertTrue(self.blog_manager.storage_proxy.list_files.called)
-        self.assertIsInstance(all_posts, list)
-
-    def test_new_post_id(self):
-        self.storage_proxy.get_json.return_value = {"latest_id": 42}
-        latest_id = self.blog_manager.new_post_id()
-
-        self.storage_proxy.get_json.assert_called_with("latest_id.json")
-        self.assertEqual(latest_id, 42)
-
-    def test_get_json(self):
-        filename = "filename.txt"
-        self.storage_proxy.get_json.return_value = {}
-        json_res = self.blog_manager.get_json(filename)
-
-        self.assertIsInstance(json_res, dict)
-        self.storage_proxy.get_json.assert_called_with(filename)
-
-    def test_get_by_id_error(self):
-        post_id = 0
-        self.storage_proxy.get_json.return_value = [
-            {"id": "noid", "title": "Sometitle", "timestamp": 000}
+    def test_get_meta_data_error(self):
+        manager = create_manager_with_mock_proxy()
+        index_json = [
+            {"id": 1, "title": "First Post", "template": "post"},
+            {"id": 2, "title": "Second Post", "template": "post"},
         ]
-        with self.assertRaises(Exception) as e:
-            self.blog_manager.get_by_id(post_id)
+        manager.storage_proxy.get_json.return_value = index_json
 
-        self.assertEqual(str(e.exception), "No blog with that ID found")
+        # Call
+        # Assert
+        with self.assertRaises(PostManagerException) as e:
+            manager.get_meta_data(5)
+            self.assertIn("Meta data not found", str(e))
 
-    def test_title_to_id(self):
-        post_id = 0
-        post_title = "Sometitle"
-        self.storage_proxy.get_json.return_value = [
-            {"id": post_id, "title": post_title, "timestamp": 000}
-        ]
-
-        post_id = self.blog_manager.title_to_id(post_title)
-
-        self.blog_manager.storage_proxy.get_json.assert_called_with("index.json")
-        self.assertIsInstance(post_id, int)
-
-    def test_title_to_id_error(self):
-        post_id = 0
-        self.storage_proxy.get_json.return_value = [
-            {"id": "noid", "title": "Sometitle", "timestamp": 000}
-        ]
-        with self.assertRaises(Exception) as e:
-            self.blog_manager.title_to_id(post_id)
-
-        self.assertEqual(str(e.exception), "No blog with that title found")
+    def test_init_storage(self):
+        pass

@@ -1,8 +1,4 @@
 import json
-from unittest.mock import MagicMock
-
-from postmanager.post import Post
-from postmanager.meta_data import PostMetaData
 
 
 BUCKET_NAME = "serverless-blog-contents"
@@ -16,26 +12,6 @@ def print_response(response, method=False):
         print(f"---- Method: {method.__name__} ----\n{text}\n--------")
     else:
         print(text)
-
-
-def create_mock_meta(post_id=1, meta_dict={}):
-    meta_id = 1
-
-    if not meta_dict:
-        meta_dict = {"title": "Cool Title"}
-
-    meta_data = PostMetaData(MagicMock(), meta_id, meta_dict)
-    return meta_data
-
-
-def create_mock_post(post_id=1, content="", meta_dict={}):
-    meta_data = create_mock_meta(post_id, meta_dict)
-
-    if not content:
-        content = {"Header": "Cool Header Content"}
-
-    post = Post(MagicMock(), meta_data, content)
-    return post
 
 
 def create_event_and_context(path, body={}, mock_bucket=True, mock_config={}):

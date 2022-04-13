@@ -1,5 +1,4 @@
 import json
-import shutil
 
 from postmanager.media_data import MediaData
 from postmanager.interface import StorageProxy
@@ -50,10 +49,6 @@ class Post(StorageAdapter):
 
         # save media data
         self.media_data.save()
-
-    def delete_all_files(self) -> None:
-        filepath = self.root_dir
-        shutil.rmtree(filepath, ignore_errors=True)
 
     # -----
     # Media methods

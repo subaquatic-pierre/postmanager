@@ -16,7 +16,7 @@ from postmanager.storage_proxy_s3 import StorageProxyS3
 class PostManager(StorageAdapter):
     def __init__(self, storage_proxy: StorageProxy) -> None:
         super().__init__(storage_proxy)
-        self._init_bucket()
+        self._init_storage()
 
     @property
     def index(self):
@@ -123,14 +123,14 @@ class PostManager(StorageAdapter):
             return post
 
         except Exception as e:
-            raise Exception(f"Post could not be saved, {str(e)}")
+            raise PostManagerException(f"Post could not be saved, {str(e)}")
 
     def delete_post(self, id: int):
         id = int(id)
         post = self.get_by_id(id)
 
-        if self.storage_proxy_class_name == "StorageProxyLocal":
-            post.delete_all_files()
+        if isinstance(self.storage_proxy, StorageProxyLocal):
+            self.storage_proxy.delete_directory(post.root_dir)
 
         else:
             all_post_files = post.list_files()
@@ -152,7 +152,8 @@ class PostManager(StorageAdapter):
 
     def get_meta_data(self, post_id):
         for index_meta in self.index:
-            meta = PostMetaData.from_json(index_meta)
+            new_proxy = self.new_storage_proxy(f"{post_id}/")
+            meta = PostMetaData.from_json(new_proxy, index_meta)
             if meta.id == int(post_id):
                 return meta
 
@@ -161,7 +162,7 @@ class PostManager(StorageAdapter):
     # Private methods
     # -----
 
-    def _init_bucket(self):
+    def _init_storage(self):
         # Check if index exists
         try:
             self.get_json("index.json")
@@ -218,14 +219,6 @@ class PostManager(StorageAdapter):
     @staticmethod
     def setup_local(template: str = "post"):
         storage_proxy = StorageProxyLocal(root_dir=f"{template}/", client=open)
-
-        post_manager = PostManager(storage_proxy)
-        return post_manager
-
-    @staticmethod
-    def setup_mock_proxy():
-
-        storage_proxy = MagicMock()
 
         post_manager = PostManager(storage_proxy)
         return post_manager

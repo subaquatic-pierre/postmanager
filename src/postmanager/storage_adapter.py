@@ -20,10 +20,6 @@ class StorageAdapter(StorageInterface):
     def root_dir(self) -> str:
         return self.storage_proxy.root_dir
 
-    @property
-    def storage_proxy_class_name(self):
-        return self.storage_proxy.__class__.__name__
-
     def save_json(self, body: dict, filename: str) -> None:
         self.storage_proxy.save_json(body, filename)
 
@@ -43,7 +39,7 @@ class StorageAdapter(StorageInterface):
         self.storage_proxy.delete_file(filename)
 
     def build_new_route(self, new_root):
-        if self.storage_proxy_class_name == "StorageProxyLocal":
+        if isinstance(self.storage_proxy, StorageProxyLocal):
             return Path(self.root_dir, new_root)
         else:
             return f"{self.root_dir}{new_root}"
@@ -51,15 +47,15 @@ class StorageAdapter(StorageInterface):
     def new_storage_proxy(self, new_root: str) -> StorageProxy:
         new_root_dir = self.build_new_route(new_root)
 
-        if self.storage_proxy_class_name == "StorageProxyS3":
+        if isinstance(self.storage_proxy, StorageProxyS3):
             return StorageProxyS3(
                 self.storage_proxy.bucket_name, new_root_dir, self.client
             )
 
-        elif self.storage_proxy_class_name == "StorageProxyLocal":
+        elif isinstance(self.storage_proxy, StorageProxyLocal):
             return StorageProxyLocal(new_root_dir, self.client)
 
-        elif self.storage_proxy_class_name == "MagicMock":
+        elif isinstance(self.storage_proxy, MagicMock):
             return MagicMock()
 
         else:

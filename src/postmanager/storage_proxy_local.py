@@ -1,5 +1,7 @@
 import json
 import os
+import shutil
+
 from typing import List
 from pathlib import Path
 
@@ -64,6 +66,9 @@ class StorageProxyLocal(StorageProxy):
 
         except Exception as e:
             raise StorageProxyException(f"Error deleting file from directory. {str(e)}")
+
+    def delete_directory(self, directory: str) -> None:
+        shutil.rmtree(directory, ignore_errors=True)
 
     def list_files(self) -> List[dict]:
         try:
