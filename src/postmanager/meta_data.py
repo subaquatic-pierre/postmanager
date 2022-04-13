@@ -19,7 +19,7 @@ class PostMetaData(StorageAdapter):
         return data
 
     def save(self):
-        self.save_json(self.to_json(), "meta.json")
+        self.save_json(self.to_json(), "meta_data.json")
 
     def update(self, meta_dict: dict):
         for key, value in meta_dict.items():

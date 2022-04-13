@@ -69,29 +69,13 @@ class StorageProxyS3Base(StorageBase):
         except Exception as e:
             raise StorageProxyException(f"Error deleting object from bucket. {str(e)}")
 
-    def delete_files(self, filenames: List[str]):
-        try:
-            if len(filenames) > 0:
-                objects = [{"Key": filename} for filename in filenames]
-                self.storage_interface.delete_objects(
-                    Bucket=self.bucket_name, Delete={"Objects": objects}
-                )
-
-        except Exception as e:
-            raise StorageProxyException(f"Error deleting files from bucket. {str(e)}")
-
     def list_files(self) -> List[dict]:
         try:
             list_response = self.storage_interface.list_objects_v2(
-                Bucket=self.bucket_name
+                Prefix=self.root_dir, Bucket=self.bucket_name
             )
             contents = list_response.get("Contents")
-            object_keys = [
-                obj["Key"]
-                for obj in contents
-                if obj["Key"].startswith(f"{self.root_dir}{dir}")
-                and obj["Key"] != f"{self.root_dir}{dir}"
-            ]
+            object_keys = [data["Key"] for data in contents]
             return object_keys
 
         except Exception as e:

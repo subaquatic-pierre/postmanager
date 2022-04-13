@@ -1,6 +1,14 @@
 from typing import List
+from pathlib import Path
 
 from postmanager.storage_base import StorageBase
+
+# Import storage proxies
+from postmanager.storage_proxy_s3 import (
+    StorageProxyS3,
+    MockStorageProxyS3,
+)
+from postmanager.storage_proxy_local import StorageProxyLocal
 
 
 class StorageAdapter(StorageBase):
@@ -30,36 +38,28 @@ class StorageAdapter(StorageBase):
     def list_files(self) -> List[dict]:
         return self.storage_proxy.list_files()
 
-    # TODO: Update delete files algorithm
-    # Delete files algorithm needs to change
-    def delete_files(self, filenames) -> None:
-        self.storage_proxy.delete_files(filenames)
-
     def delete_file(self, filename) -> None:
         self.storage_proxy.delete_file(filename)
 
+    def build_new_route(self, new_root):
+        if self.storage_proxy_class_name == "StorageProxyLocal":
+            return Path(self.root_dir, new_root)
+        else:
+            return f"{self.root_dir}{new_root}"
+
     def new_storage_proxy(self, new_root: str, mock_config={}) -> StorageBase:
-
-        # Import storage proxies
-        from postmanager.storage_proxy_s3 import (
-            StorageProxyS3,
-            MockStorageProxyS3,
-        )
-        from postmanager.storage_proxy_local import StorageProxyLocal
-
-        # New root dir for child object
-        root_dir = f"{self.root_dir}{new_root}"
+        new_root_dir = self.build_new_route(new_root)
 
         if self.storage_proxy_class_name == "MockStorageProxyS3":
             return MockStorageProxyS3(
-                self.storage_proxy.bucket_name, root_dir, mock_config=mock_config
+                self.storage_proxy.bucket_name, new_root_dir, mock_config=mock_config
             )
 
         elif self.storage_proxy_class_name == "StorageProxyS3":
-            return StorageProxyS3(self.storage_proxy.bucket_name, root_dir)
+            return StorageProxyS3(self.storage_proxy.bucket_name, new_root_dir)
 
         elif self.storage_proxy_class_name == "StorageProxyLocal":
-            return StorageProxyLocal(root_dir)
+            return StorageProxyLocal(new_root_dir)
 
         else:
             raise Exception("No storage proxy could be found")

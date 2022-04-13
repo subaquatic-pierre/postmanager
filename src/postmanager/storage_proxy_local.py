@@ -1,4 +1,6 @@
 import json
+import os
+import fnmatch
 from typing import List
 from pathlib import Path
 
@@ -56,21 +58,6 @@ class StorageProxyLocal(StorageBase):
         except Exception as e:
             raise StorageProxyException(f"Error getting bytes from directory. {str(e)}")
 
-    # TODO: Method needs to be fixed
-    # Not currently being used
-    # need  to change delete file algorithm
-    # in manager
-    def delete_files(self, filenames: List[str]) -> None:
-        try:
-            for filename in filenames:
-                filepath = Path(self.root_dir, filename)
-                filepath.unlink(missing_ok=True)
-
-        except Exception as e:
-            raise StorageProxyException(
-                f"Error deleting files from directory. {str(e)}"
-            )
-
     def delete_file(self, filename: str) -> None:
         try:
             filepath = Path(self.root_dir, filename)
@@ -98,21 +85,13 @@ class StorageProxyLocal(StorageBase):
 
     def _init_root_dir(self, root_dir: str):
         config_home_dir = self.config.get("home_dir", False)
-        sys_home_dir = str(Path.home())
+        sys_home_dir = Path.home()
 
-        # Check if home dirrectory specified in config object
-        # config home directory must exist
         if config_home_dir:
-            if config_home_dir.endswith("/"):
-                config_root_dir = f"{config_home_dir}{root_dir}"
-            else:
-                config_root_dir = f"{config_home_dir}/{root_dir}"
+            root_dir_path = Path(config_home_dir, root_dir)
 
-            root_dir_path = Path(config_root_dir)
-
-        # No home dir configured, use default
         else:
-            default_root_dir = f"{sys_home_dir}/.postmanager/data/{root_dir}"
+            default_root_dir = Path(sys_home_dir, ".postmanager", "data", root_dir)
             root_dir_path = Path(default_root_dir)
 
         root_dir_path.mkdir(parents=True, exist_ok=True)

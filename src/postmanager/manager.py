@@ -121,21 +121,22 @@ class PostManager(StorageAdapter):
         id = int(id)
         post = self.get_by_id(id)
 
-        # TODO: Need fix
-        # Check storage_proxy, if local_storage,
-        # use special method on post for delete
-        # delete files algorithm needs to change
         if self.storage_proxy_class_name == "StorageProxyLocal":
-            post.delete_self()
+            post.delete_all_files()
 
         else:
-            # Loop over list and call delete
-            # on single
-            post_files = post.list_files()
+            all_post_files = post.list_files()
+            file_keys = [
+                filename.replace(
+                    post.root_dir,
+                    "",
+                )
+                for filename in all_post_files
+            ]
 
-            # Add root dir to filenames
-            post_files.append(post.root_dir)
-            self.delete_files(post_files)
+            for key in file_keys:
+                post.delete_file(key)
+            self.delete_file(f"{post.id}/")
 
         # Update index
         new_index = [meta for meta in self.index if meta["id"] != id]

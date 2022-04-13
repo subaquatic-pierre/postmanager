@@ -52,7 +52,7 @@ class Post(StorageAdapter):
         # save media data
         self.media_data.save()
 
-    def delete_self(self):
+    def delete_all_files(self) -> None:
         filepath = self.root_dir
         shutil.rmtree(filepath, ignore_errors=True)
 
@@ -81,8 +81,7 @@ class Post(StorageAdapter):
     # -----
 
     def _init_media_data(self):
-        media_data_root_dir = f"{self.root_dir}media/"
-        media_storage_proxy = self.new_storage_proxy(media_data_root_dir)
+        media_storage_proxy = self.new_storage_proxy("media/")
         media_data = MediaData(media_storage_proxy)
         self.media_data = media_data
 
