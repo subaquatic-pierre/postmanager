@@ -1,7 +1,7 @@
 from unittest import TestCase
 from unittest.mock import MagicMock, call
 
-from tests.utils import set_get_object_return_value, create_mock_post
+from tests.utils import create_mock_post
 
 from postmanager.manager import PostManager
 from postmanager.post import Post
@@ -37,25 +37,26 @@ class TestPostManagerMockStorageProxy(TestCase):
         self.assertEqual(post.id, 0)
 
     def test_new_meta_data_with_id(self):
-        meta_dict = {"id": 0, "title": "Awesome Title"}
+        self.blog_manager.new_post_id = MagicMock()
+        meta_dict = {"id": 1, "title": "Awesome Title"}
 
         # Call
         meta = self.blog_manager.new_meta_data(meta_dict)
 
         # Assert
+        self.blog_manager.new_post_id.assert_not_called()
         self.blog_manager.storage_proxy.get_json.assert_called()
         self.assertEqual(meta.title, meta_dict.get("title"))
 
     def test_new_meta_data_without_id(self):
-        self.blog_manager.storage_proxy.get_json.return_value = {"latest_id": 0}
+        self.blog_manager.new_post_id = MagicMock(return_value=0)
         meta_dict = {"title": "Awesome Title"}
-        self.blog_manager.new_post_id = MagicMock()
 
         # Call
         meta_data = self.blog_manager.new_meta_data(meta_dict)
 
         # Assert
-        self.blog_manager.new_post_id.assert_not_called()
+        self.blog_manager.new_post_id.assert_called()
         self.assertEqual(meta_data.title, meta_dict.get("title"))
         self.assertEqual(meta_data.id, 0)
 

@@ -18,8 +18,8 @@ def print_response(response, method=False):
         print(text)
 
 
-def create_mock_meta(post_id=0, meta_dict={}):
-    meta_id = 0
+def create_mock_meta(post_id=1, meta_dict={}):
+    meta_id = 1
 
     if not meta_dict:
         meta_dict = {"title": "Cool Title"}
@@ -28,7 +28,7 @@ def create_mock_meta(post_id=0, meta_dict={}):
     return meta_data
 
 
-def create_mock_post(post_id=0, content="", meta_dict={}):
+def create_mock_post(post_id=1, content="", meta_dict={}):
     meta_data = create_mock_meta(post_id, meta_dict)
 
     if not content:

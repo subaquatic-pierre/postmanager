@@ -67,6 +67,14 @@ class PostManager(StorageAdapter):
     # Post new methods
     # -----
 
+    def new_post_id(self):
+        latest_id_json = self.get_json("latest_id.json")
+        latest_id = latest_id_json.get("latest_id")
+        new_id = latest_id + 1
+
+        self.save_json({"latest_id": new_id}, "latest_id.json")
+        return latest_id
+
     def new_meta_data(self, meta_dict: dict) -> PostMetaData:
         # Add ID to meta if not exists
         post_id = meta_dict.get("id", False)
@@ -149,14 +157,6 @@ class PostManager(StorageAdapter):
                 return meta
 
         raise PostManagerException("Meta data not found")
-
-    def new_post_id(self):
-        latest_id_json = self.get_json("latest_id.json")
-        latest_id = latest_id_json.get("latest_id")
-        new_id = latest_id + 1
-
-        self.save_json({"latest_id": new_id}, "latest_id.json")
-        return latest_id
 
     # Private methods
     # -----
