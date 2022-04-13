@@ -22,9 +22,9 @@ class StorageProxyS3Test(TestCase):
         body = {}
         self.bucket.save_json(body, filename)
 
-        self.bucket.storage_interface.put_object.assert_called()
+        self.bucket.client.put_object.assert_called()
 
-        self.bucket.storage_interface.put_object.assert_called_with(
+        self.bucket.client.put_object.assert_called_with(
             Bucket=self.bucket.bucket_name,
             Key=f"{self.bucket.root_dir}{filename}",
             Body=json.dumps(body),
@@ -35,7 +35,7 @@ class StorageProxyS3Test(TestCase):
 
         self.bucket.delete_files(filenames)
         objects = [{"Key": filename} for filename in filenames]
-        self.bucket.storage_interface.delete_objects.assert_called_with(
+        self.bucket.client.delete_objects.assert_called_with(
             Bucket=self.bucket.bucket_name, Delete={"Objects": objects}
         )
 
@@ -43,7 +43,7 @@ class StorageProxyS3Test(TestCase):
         filenames = []
 
         self.bucket.delete_files(filenames)
-        self.bucket.storage_interface.delete_objects.assert_not_called()
+        self.bucket.client.delete_objects.assert_not_called()
 
     def test_list_dir(self):
         expected_res = [
@@ -58,11 +58,9 @@ class StorageProxyS3Test(TestCase):
             ]
         }
 
-        self.bucket.storage_interface.list_objects_v2 = MagicMock(
-            return_value=list_objects_res
-        )
+        self.bucket.client.list_objects_v2 = MagicMock(return_value=list_objects_res)
         dir_response = self.bucket.list_dir()
-        self.bucket.storage_interface.list_objects_v2.assert_called_once()
+        self.bucket.client.list_objects_v2.assert_called_once()
 
         self.assertIsInstance(dir_response, list)
         self.assertEqual(expected_res, dir_response)
@@ -72,9 +70,9 @@ class StorageProxyS3Test(TestCase):
         filename = "something.jpg"
         self.bucket.save_bytes(body, filename)
 
-        self.bucket.storage_interface.put_object.assert_called()
+        self.bucket.client.put_object.assert_called()
 
-        self.bucket.storage_interface.put_object.assert_called_with(
+        self.bucket.client.put_object.assert_called_with(
             Key=f"{self.bucket.root_dir}{filename}",
             Body=body,
             Bucket=self.bucket.bucket_name,

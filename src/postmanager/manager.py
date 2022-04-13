@@ -4,7 +4,7 @@ from postmanager.post import Post
 from postmanager.http import Event
 
 from postmanager.exception import StorageProxyException, PostManagerException
-from postmanager.storage_base import StorageBase
+from postmanager.storage_interface import StorageInterface
 from postmanager.storage_adapter import StorageAdapter
 from postmanager.storage_proxy_local import StorageProxyLocal
 from postmanager.storage_proxy_s3 import (
@@ -14,7 +14,7 @@ from postmanager.storage_proxy_s3 import (
 
 
 class PostManager(StorageAdapter):
-    def __init__(self, storage_proxy: StorageBase) -> None:
+    def __init__(self, storage_proxy: StorageInterface) -> None:
         super().__init__(storage_proxy)
         self._init_bucket()
 

@@ -4,11 +4,13 @@ from unittest.mock import MagicMock
 
 from postmanager.config import setup_client
 from postmanager.exception import StorageProxyException
-from postmanager.storage_base import StorageBase
+from postmanager.interface import StorageProxy
 
 
-class StorageProxyS3Base(StorageBase):
-    def __init__(self, bucket_name, root_dir) -> None:
+class StorageProxyS3Base(StorageProxy):
+    def __init__(self, bucket_name, root_dir, client) -> None:
+        super().__init__(client)
+
         self.root_dir = root_dir
         self.bucket_name = bucket_name
 
@@ -16,7 +18,7 @@ class StorageProxyS3Base(StorageBase):
 
     def get_json(self, filename):
         try:
-            object = self.storage_interface.get_object(
+            object = self.client.get_object(
                 Bucket=self.bucket_name, Key=f"{self.root_dir}{filename}"
             )
 
@@ -28,7 +30,7 @@ class StorageProxyS3Base(StorageBase):
 
     def save_json(self, body: dict, filename: str):
         try:
-            self.storage_interface.put_object(
+            self.client.put_object(
                 Bucket=self.bucket_name,
                 Key=f"{self.root_dir}{filename}",
                 Body=json.dumps(body),
@@ -39,7 +41,7 @@ class StorageProxyS3Base(StorageBase):
 
     def save_bytes(self, bytes: bytes, filename: str) -> None:
         try:
-            self.storage_interface.put_object(
+            self.client.put_object(
                 Bucket=self.bucket_name,
                 Key=f"{self.root_dir}{filename}",
                 Body=bytes,
@@ -50,7 +52,7 @@ class StorageProxyS3Base(StorageBase):
 
     def get_bytes(self, filename: str) -> bytes:
         try:
-            object = self.storage_interface.get_object(
+            object = self.client.get_object(
                 Bucket=self.bucket_name, Key=f"{self.root_dir}{filename}"
             )
 
@@ -62,7 +64,7 @@ class StorageProxyS3Base(StorageBase):
 
     def delete_file(self, filename: str) -> None:
         try:
-            self.storage_interface.delete_object(
+            self.client.delete_object(
                 Bucket=self.bucket_name, Key=f"{self.root_dir}{filename}"
             )
 
@@ -71,7 +73,7 @@ class StorageProxyS3Base(StorageBase):
 
     def list_files(self) -> List[dict]:
         try:
-            list_response = self.storage_interface.list_objects_v2(
+            list_response = self.client.list_objects_v2(
                 Prefix=self.root_dir, Bucket=self.bucket_name
             )
             contents = list_response.get("Contents")
@@ -90,32 +92,35 @@ class StorageProxyS3Base(StorageBase):
 
 class StorageProxyS3(StorageProxyS3Base):
     def __init__(self, bucket_name, root_dir) -> None:
-        super().__init__(bucket_name, root_dir)
-        self.storage_interface = setup_client()
+        client = setup_client()
+        super().__init__(bucket_name, root_dir, client)
 
 
 # ----------
 # Created MockStorageProxyS3 for testing purposes
+# Only difference is MockStorageS3Proxy uses MagicMock
+# for the client attribute on StorageProxy
 # ----------
+
+
+class StreamingBodyMock:
+    def __init__(self, config) -> None:
+        self.config = config
+
+    def read(self):
+        default_return_value = {"test": "ok"}
+        return_value = self.config.get("get_object_return_value", default_return_value)
+        return json.dumps(return_value)
 
 
 class MockStorageProxyS3(StorageProxyS3Base):
     def __init__(self, bucket_name, root_dir, mock_config={}) -> None:
-        super().__init__(bucket_name, root_dir)
+        client = MagicMock()
 
-        # Set mocks
-        self.storage_interface = MagicMock()
-        mock_attrs = {"get_object.return_value": self.create_object_mock()}
-        self.storage_interface.configure_mock(**mock_attrs)
+        super().__init__(bucket_name, root_dir, client)
 
-    def create_object_mock(self):
-        class StreamingBodyMock:
-            def read(self):
-                return json.dumps({"test": "ok"})
+        self._init_mock(mock_config)
 
-        object = {"Body": StreamingBodyMock()}
-
-        return object
-
-
-# ----------
+    def _init_mock(self, mock_config):
+        mock_attrs = {"get_object.return_value": StreamingBodyMock(mock_config)}
+        self.client.configure_mock(**mock_attrs)

@@ -2,7 +2,7 @@ from typing import List
 from abc import ABC, abstractmethod
 
 
-class StorageBase(ABC):
+class StorageInterface(ABC):
     @abstractmethod
     def get_json(self, filename: str) -> dict:
         pass

@@ -1,16 +1,15 @@
 import json
 import os
-import fnmatch
 from typing import List
 from pathlib import Path
 
-
-from postmanager.storage_base import StorageBase
 from postmanager.exception import StorageProxyException
+from postmanager.interface import StorageProxy
 
 
-class StorageProxyLocal(StorageBase):
+class StorageProxyLocal(StorageProxy):
     def __init__(self, root_dir: str, config={}) -> None:
+        super().__init__(open)
         self.config = config
 
         self._init_root_dir(root_dir)
@@ -19,7 +18,7 @@ class StorageProxyLocal(StorageBase):
         try:
             filepath = Path(self.root_dir, filename)
 
-            with open(filepath, "r") as f:
+            with self.client(filepath, "r") as f:
                 object_json = json.loads(f.read())
 
             return object_json
@@ -30,7 +29,7 @@ class StorageProxyLocal(StorageBase):
         try:
             filepath = Path(self.root_dir, filename)
 
-            with open(filepath, "w") as f:
+            with self.client(filepath, "w") as f:
                 f.write(json.dumps(body, indent=4))
 
         except Exception as e:
@@ -40,7 +39,7 @@ class StorageProxyLocal(StorageBase):
         try:
             filepath = Path(self.root_dir, filename)
 
-            with open(filepath, "wb") as f:
+            with self.client(filepath, "wb") as f:
                 f.write(bytes)
 
         except Exception as e:
@@ -50,7 +49,7 @@ class StorageProxyLocal(StorageBase):
         try:
             filepath = Path(self.root_dir, filename)
 
-            with open(filepath, "rb") as f:
+            with self.client(filepath, "rb") as f:
                 bytes = f.read()
 
             return bytes

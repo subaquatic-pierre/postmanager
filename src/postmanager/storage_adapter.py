@@ -1,18 +1,17 @@
 from typing import List
 from pathlib import Path
 
-from postmanager.storage_base import StorageBase
+from postmanager.interface import StorageProxy
 
-# Import storage proxies
+from postmanager.storage_proxy_local import StorageProxyLocal
 from postmanager.storage_proxy_s3 import (
     StorageProxyS3,
     MockStorageProxyS3,
 )
-from postmanager.storage_proxy_local import StorageProxyLocal
 
 
-class StorageAdapter(StorageBase):
-    def __init__(self, storage_proxy: StorageBase) -> None:
+class StorageAdapter(StorageInterface):
+    def __init__(self, storage_proxy: StorageProxy) -> None:
         self.storage_proxy = storage_proxy
 
     @property
@@ -47,7 +46,7 @@ class StorageAdapter(StorageBase):
         else:
             return f"{self.root_dir}{new_root}"
 
-    def new_storage_proxy(self, new_root: str, mock_config={}) -> StorageBase:
+    def new_storage_proxy(self, new_root: str, mock_config={}) -> StorageProxy:
         new_root_dir = self.build_new_route(new_root)
 
         if self.storage_proxy_class_name == "MockStorageProxyS3":
