@@ -1,0 +1,2 @@
+from postmanager.interfaces.storage_interface import StorageInterface
+from postmanager.interfaces.storage_proxy import StorageProxy

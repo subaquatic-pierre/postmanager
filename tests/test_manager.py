@@ -1,12 +1,11 @@
 from pathlib import Path
 from unittest import TestCase
 from unittest.mock import MagicMock, call
-from postmanager.http import Event
-import boto3
 
 from postmanager.post import Post
-from postmanager.meta_data import PostMetaData
+from postmanager.http import Event
 from postmanager.manager import PostManager
+from postmanager.meta_data import PostMetaData
 from postmanager.storage_proxy_local import StorageProxyLocal
 from postmanager.exception import StorageProxyException, PostManagerException
 

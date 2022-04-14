@@ -7,7 +7,7 @@ from postmanager.http import Event
 
 from postmanager.config import setup_s3_client
 from postmanager.exception import StorageProxyException, PostManagerException
-from postmanager.interface import StorageProxy
+from postmanager.interfaces import StorageProxy
 from postmanager.storage_adapter import StorageAdapter
 from postmanager.storage_proxy_local import StorageProxyLocal
 from postmanager.storage_proxy_s3 import StorageProxyS3

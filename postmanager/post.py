@@ -1,7 +1,7 @@
 import json
 
 from postmanager.media_data import MediaData
-from postmanager.interface import StorageProxy
+from postmanager.interfaces import StorageProxy
 from postmanager.storage_adapter import StorageAdapter
 from postmanager.meta_data import PostMetaData
 from postmanager.exception import StorageProxyException

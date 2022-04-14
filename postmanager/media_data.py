@@ -1,4 +1,4 @@
-from postmanager.interface import StorageInterface, StorageProxy
+from postmanager.interfaces import StorageInterface, StorageProxy
 from postmanager.storage_adapter import StorageAdapter
 from postmanager.exception import StorageProxyException
 from base64 import b64decode, b64encode

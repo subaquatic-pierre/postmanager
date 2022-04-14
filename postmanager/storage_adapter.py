@@ -2,7 +2,7 @@ from typing import List
 from pathlib import Path
 from unittest.mock import MagicMock
 
-from postmanager.interface import StorageProxy, StorageInterface
+from postmanager.interfaces import StorageProxy, StorageInterface
 
 from postmanager.storage_proxy_local import StorageProxyLocal
 from postmanager.storage_proxy_s3 import StorageProxyS3

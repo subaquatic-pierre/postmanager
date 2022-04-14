@@ -1,5 +1,5 @@
 from abc import ABC
-from postmanager.interface import StorageInterface
+from postmanager.interfaces import StorageInterface
 
 
 class StorageProxy(StorageInterface, ABC):

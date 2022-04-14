@@ -6,7 +6,7 @@ from typing import List
 from pathlib import Path
 
 from postmanager.exception import StorageProxyException
-from postmanager.interface import StorageProxy
+from postmanager.interfaces import StorageProxy
 
 
 class StorageProxyLocal(StorageProxy):

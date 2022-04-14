@@ -1,4 +1,4 @@
-from postmanager.interface import StorageProxy
+from postmanager.interfaces import StorageProxy
 from postmanager.storage_adapter import StorageAdapter
 
 

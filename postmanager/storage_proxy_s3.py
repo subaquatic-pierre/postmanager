@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 
 from postmanager.config import setup_s3_client
 from postmanager.exception import StorageProxyException
-from postmanager.interface import StorageProxy
+from postmanager.interfaces import StorageProxy
 
 
 class StorageProxyS3(StorageProxy):
