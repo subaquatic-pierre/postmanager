@@ -18,10 +18,8 @@ class StorageProxyLocal(StorageProxy):
 
     def get_json(self, filename: str) -> dict:
         try:
-            filepath = Path(self.root_dir, filename)
-
-            with self.client(filepath, "r") as f:
-                object_json = json.loads(f.read())
+            file = self.client(self.root_dir, filename)
+            object_json = json.loads(file.read_text())
 
             return object_json
         except Exception as e:
@@ -29,30 +27,24 @@ class StorageProxyLocal(StorageProxy):
 
     def save_json(self, body: dict, filename: str) -> None:
         try:
-            filepath = Path(self.root_dir, filename)
-
-            with self.client(filepath, "w") as f:
-                f.write(json.dumps(body, indent=4))
+            file = self.client(self.root_dir, filename)
+            file.write_text(json.dumps(body, indent=4))
 
         except Exception as e:
             raise StorageProxyException(f"Error saving JSON to directory. {str(e)}")
 
     def save_bytes(self, bytes: bytes, filename: str) -> None:
         try:
-            filepath = Path(self.root_dir, filename)
-
-            with self.client(filepath, "wb") as f:
-                f.write(bytes)
+            file = self.client(self.root_dir, filename)
+            file.write_bytes(bytes)
 
         except Exception as e:
             raise StorageProxyException(f"Error saving bytes to directory. {str(e)}")
 
     def get_bytes(self, filename: str) -> bytes:
         try:
-            filepath = Path(self.root_dir, filename)
-
-            with self.client(filepath, "rb") as f:
-                bytes = f.read()
+            file = self.client(self.root_dir, filename)
+            bytes = file.read_bytes()
 
             return bytes
 
@@ -61,8 +53,8 @@ class StorageProxyLocal(StorageProxy):
 
     def delete_file(self, filename: str) -> None:
         try:
-            filepath = Path(self.root_dir, filename)
-            filepath.unlink(missing_ok=True)
+            file = self.client(self.root_dir, filename)
+            file.unlink(missing_ok=True)
 
         except Exception as e:
             raise StorageProxyException(f"Error deleting file from directory. {str(e)}")
@@ -72,9 +64,9 @@ class StorageProxyLocal(StorageProxy):
 
     def list_files(self) -> List[dict]:
         try:
-            filepath = Path(self.root_dir)
+            filepath = self.client(self.root_dir)
             paths = []
-            for currentpath, folders, files in os.walk(filepath):
+            for currentpath, _, files in os.walk(filepath):
                 # Add current path to paths
                 paths.append(currentpath)
 

@@ -1,3 +1,4 @@
+from pathlib import Path
 import boto3
 from botocore.config import Config
 
@@ -12,5 +13,5 @@ def setup_s3_client(credentials={}, client_config={}):
 
 
 def setup_local_client():
-    client = open
+    client = Path
     return client

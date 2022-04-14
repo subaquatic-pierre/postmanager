@@ -25,5 +25,5 @@ setup(
     packages=find_packages(exclude=["tests"]),
     test_suite="tests",
     python_requires=">=3.6,<4",
-    install_requires=["boto3"],
+    install_requires=["boto3==1.21.38"],
 )

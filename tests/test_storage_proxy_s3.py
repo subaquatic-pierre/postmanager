@@ -1,6 +1,6 @@
 import json
 from unittest import TestCase
-from unittest.mock import MagicMock, call
+from unittest.mock import MagicMock
 
 from postmanager.exception import StorageProxyException
 from postmanager.storage_proxy_s3 import StorageProxyS3
