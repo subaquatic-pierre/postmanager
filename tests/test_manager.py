@@ -10,17 +10,16 @@ from postmanager.meta_data import PostMetaData
 from postmanager.storage_proxy_local import StorageProxyLocal
 from postmanager.exception import StorageProxyException, PostManagerException
 
-from tests.mocks import (
-    create_mock_meta,
-    create_mock_post,
-    create_manager_with_mock_proxy,
-    mock_setup_client,
+from tests.setup_objects import (
+    setup_mock_meta,
+    setup_mock_post,
+    setup_manager,
 )
 
-post_meta_dict_1 = {"id": 1, "title": "Cool Title", "template": "post"}
-post_meta_dict_3 = {"id": 3, "title": "Post Number Three", "template": "post"}
-post_content = {"Header": "Cool Header Content"}
-manager_index_json = [
+META_DICT_1 = {"id": 1, "title": "Cool Title", "template": "post"}
+META_DICT_3 = {"id": 3, "title": "Post Number Three", "template": "post"}
+POST_CONTENT = {"Header": "Cool Header Content"}
+INDEX_JSON = [
     {"id": 1, "title": "First Post", "template": "post"},
     {"id": 2, "title": "Second Post", "template": "post"},
 ]
@@ -34,9 +33,9 @@ class TestPostManager(TestCase):
     """
 
     def test_index(self):
-        manager = create_manager_with_mock_proxy()
+        manager = setup_manager()
 
-        manager.storage_proxy.get_json.return_value = manager_index_json
+        manager.storage_proxy.get_json.return_value = INDEX_JSON
 
         # Call
         index = manager.index
@@ -47,18 +46,16 @@ class TestPostManager(TestCase):
         self.assertEqual(index[0]["title"], "First Post")
 
     def test_update_index(self):
-        manager = create_manager_with_mock_proxy()
+        manager = setup_manager()
 
         # Call
-        manager.update_index(manager_index_json)
+        manager.update_index(INDEX_JSON)
 
         # Assert
-        manager.storage_proxy.save_json.assert_called_with(
-            manager_index_json, "index.json"
-        )
+        manager.storage_proxy.save_json.assert_called_with(INDEX_JSON, "index.json")
 
     def test_get_by_id(self):
-        manager = create_manager_with_mock_proxy()
+        manager = setup_manager()
         meta_index = [
             {"id": 1, "title": "First Post", "template": "post"},
             {"id": 2, "title": "Second Post", "template": "post"},
@@ -67,7 +64,7 @@ class TestPostManager(TestCase):
         manager._verify_meta = MagicMock()
         manager.build_meta_data = MagicMock()
         manager.build_post = MagicMock(
-            return_value=create_mock_post(1, post_meta_dict_1, post_content)
+            return_value=setup_mock_post(1, META_DICT_1, POST_CONTENT)
         )
 
         # Call
@@ -80,7 +77,7 @@ class TestPostManager(TestCase):
         self.assertEqual(post.id, 1)
 
     def test_build_meta_data(self):
-        manager = create_manager_with_mock_proxy()
+        manager = setup_manager()
         meta_dict = {"id": 1, "title": "Cool Title"}
 
         # Call
@@ -92,21 +89,21 @@ class TestPostManager(TestCase):
         self.assertEqual(meta_data.id, 1)
 
     def test_build_post(self):
-        manager = create_manager_with_mock_proxy()
-        meta_data = create_mock_meta(1, post_meta_dict_1)
+        manager = setup_manager()
+        meta_data = setup_mock_meta(1, META_DICT_1)
 
         # Call
-        post = manager.build_post(meta_data, post_content)
+        post = manager.build_post(meta_data, POST_CONTENT)
 
         # Assert
         self.assertEqual(post.id, 1)
-        self.assertEqual(post.content, post_content)
+        self.assertEqual(post.content, POST_CONTENT)
 
     def test_title_to_id(self):
-        manager = create_manager_with_mock_proxy()
+        manager = setup_manager()
 
         manager._verify_meta = MagicMock()
-        manager.storage_proxy.get_json.return_value = manager_index_json
+        manager.storage_proxy.get_json.return_value = INDEX_JSON
 
         # Call
         post_id = manager.title_to_id("First Post")
@@ -115,18 +112,18 @@ class TestPostManager(TestCase):
         self.assertEqual(post_id, 1)
 
     def test_get_post_content(self):
-        manager = create_manager_with_mock_proxy()
-        post_content = {"Cool": "Content"}
-        manager.storage_proxy.get_json.return_value = post_content
+        manager = setup_manager()
+        POST_CONTENT = {"Cool": "Content"}
+        manager.storage_proxy.get_json.return_value = POST_CONTENT
 
         # Call
         content = manager.get_post_content(1)
 
         # Assert
-        self.assertEqual(content, post_content)
+        self.assertEqual(content, POST_CONTENT)
 
     def test_new_post_id(self):
-        manager = create_manager_with_mock_proxy()
+        manager = setup_manager()
         manager.storage_proxy.get_json.return_value = {"latest_id": 0}
 
         # Call
@@ -136,7 +133,7 @@ class TestPostManager(TestCase):
         self.assertEqual(new_id, 0)
 
     def test_new_meta_data_with_id(self):
-        manager = create_manager_with_mock_proxy()
+        manager = setup_manager()
         manager.new_post_id = MagicMock()
         meta_dict = {"id": 1, "title": "Awesome Title"}
 
@@ -149,7 +146,7 @@ class TestPostManager(TestCase):
         self.assertEqual(meta.title, meta_dict.get("title"))
 
     def test_new_meta_data_without_id(self):
-        manager = create_manager_with_mock_proxy()
+        manager = setup_manager()
         manager.new_post_id = MagicMock(return_value=0)
         meta_dict = {"title": "Awesome Title"}
 
@@ -162,65 +159,65 @@ class TestPostManager(TestCase):
         self.assertEqual(meta_data.id, 0)
 
     def test_new_post(self):
-        manager = create_manager_with_mock_proxy()
-        post_content = {"blocks": "Cool post content"}
+        manager = setup_manager()
+        POST_CONTENT = {"blocks": "Cool post content"}
         meta_dict = {"title": "Awesome Title"}
         manager.storage_proxy.root_dir = "test/"
         manager.new_post_id = MagicMock(return_value=0)
 
         # Call
-        post = manager.new_post(meta_dict, post_content)
+        post = manager.new_post(meta_dict, POST_CONTENT)
 
         # Assert
         self.assertEqual(post.meta_data.title, meta_dict["title"])
-        self.assertEqual(post.content, post_content)
+        self.assertEqual(post.content, POST_CONTENT)
 
     # ----------- FAILED ---------------
 
     def test_save_post_new(self):
-        manager = create_manager_with_mock_proxy()
-        new_post = create_mock_post(3, post_meta_dict_1, post_content)
+        manager = setup_manager()
+        new_post = setup_mock_post(3, META_DICT_1, POST_CONTENT)
         new_post.save = MagicMock()
         manager.update_index = MagicMock()
-        manager.storage_proxy.get_json.return_value = manager_index_json
+        manager.storage_proxy.get_json.return_value = INDEX_JSON
 
         # Call
         returned_post = manager.save_post(new_post)
 
         # Assert
-        manager_index_copy = [item for item in manager_index_json]
+        manager_index_copy = [item for item in INDEX_JSON]
         manager_index_copy.append(new_post.meta_data.to_json())
         manager.update_index.assert_called_with(manager_index_copy)
         new_post.save.assert_called_once()
         self.assertEqual(returned_post, new_post)
 
     def test_save_post_update(self):
-        manager = create_manager_with_mock_proxy()
+        manager = setup_manager()
         updated_post_meta = {"id": 1, "title": "Awesome New Title", "template": "post"}
-        updated_manager_index_json = [
+        updated_INDEX_JSON = [
             updated_post_meta,
             {"id": 2, "title": "Second Post", "template": "post"},
         ]
 
-        post = create_mock_post(1, updated_post_meta, post_content)
+        post = setup_mock_post(1, updated_post_meta, POST_CONTENT)
         post.save = MagicMock()
         manager.update_index = MagicMock()
-        manager.storage_proxy.get_json.return_value = manager_index_json
+        manager.storage_proxy.get_json.return_value = INDEX_JSON
 
         # Call
         returned_post = manager.save_post(post)
 
         # Assert
-        manager.update_index.assert_called_with(updated_manager_index_json)
+        manager.update_index.assert_called_with(updated_INDEX_JSON)
         self.assertEqual(updated_post_meta, returned_post.meta_data.to_json())
 
     def test_save_post_error(self):
-        manager = create_manager_with_mock_proxy()
+        manager = setup_manager()
 
-        new_post = create_mock_post(1, post_meta_dict_1, post_content)
+        new_post = setup_mock_post(1, META_DICT_1, POST_CONTENT)
         new_post.save = MagicMock(side_effect=Exception)
         manager.update_index = MagicMock()
-        manager.storage_proxy.get_json.return_value = manager_index_json
+        manager.storage_proxy.get_json.return_value = INDEX_JSON
 
         # Call
         # Assert
@@ -232,9 +229,9 @@ class TestPostManager(TestCase):
 
     def test_delete_post_local_proxy(self):
 
-        manager = create_manager_with_mock_proxy()
+        manager = setup_manager()
         manager.storage_proxy = StorageProxyLocal("test", MagicMock())
-        manager.storage_proxy.get_json = MagicMock(return_value=manager_index_json)
+        manager.storage_proxy.get_json = MagicMock(return_value=INDEX_JSON)
         manager.storage_proxy.delete_directory = MagicMock()
         manager.update_index = MagicMock()
 
@@ -246,8 +243,8 @@ class TestPostManager(TestCase):
         manager.update_index.assert_called_once()
 
     def test_delete_post(self):
-        manager = create_manager_with_mock_proxy()
-        post = create_mock_post(1, post_meta_dict_1, post_content)
+        manager = setup_manager()
+        post = setup_mock_post(1, META_DICT_1, POST_CONTENT)
         post.list_files = MagicMock(return_value=["first.txt"])
         post.storage_proxy.root_dir = "test"
         post.delete_file = MagicMock()
@@ -262,9 +259,9 @@ class TestPostManager(TestCase):
         manager.delete_file.assert_called_once()
 
     def test_get_meta_data(self):
-        manager = create_manager_with_mock_proxy()
+        manager = setup_manager()
 
-        manager.storage_proxy.get_json.return_value = manager_index_json
+        manager.storage_proxy.get_json.return_value = INDEX_JSON
 
         # Call
         meta_data = manager.get_meta_data(1)
@@ -274,9 +271,9 @@ class TestPostManager(TestCase):
         self.assertIsInstance(meta_data, PostMetaData)
 
     def test_get_meta_data_error(self):
-        manager = create_manager_with_mock_proxy()
+        manager = setup_manager()
 
-        manager.storage_proxy.get_json.return_value = manager_index_json
+        manager.storage_proxy.get_json.return_value = INDEX_JSON
 
         # Call
         # Assert
@@ -285,9 +282,9 @@ class TestPostManager(TestCase):
             self.assertIn("Meta data not found", str(e))
 
     def test_init_storage(self):
-        manager = create_manager_with_mock_proxy()
+        manager = setup_manager()
 
-        manager.storage_proxy.get_json.return_value = manager_index_json
+        manager.storage_proxy.get_json.return_value = INDEX_JSON
 
         # Assert
         call_args = manager.storage_proxy.get_json.call_args_list
@@ -309,7 +306,7 @@ class TestPostManager(TestCase):
         self.assertEqual(call_args, expexted_call_args)
 
     def test_verify_meta_more_than_one_found(self):
-        manager = create_manager_with_mock_proxy()
+        manager = setup_manager()
         meta_data_list = [
             {"id": 1, "title": "First Post", "template": "post"},
             {"id": 2, "title": "Second Post", "template": "post"},
@@ -321,7 +318,7 @@ class TestPostManager(TestCase):
         self.assertIn("More than one blog with that ID found", str(e.exception))
 
     def test_verify_meta_not_found(self):
-        manager = create_manager_with_mock_proxy()
+        manager = setup_manager()
         meta_data_list = []
         error_message = "No blog with that ID found"
 

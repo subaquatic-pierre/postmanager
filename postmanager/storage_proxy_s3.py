@@ -1,8 +1,6 @@
 import json
 from typing import List
-from unittest.mock import MagicMock
 
-from postmanager.config import setup_s3_client
 from postmanager.exception import StorageProxyException
 from postmanager.interfaces import StorageProxy
 
@@ -48,7 +46,7 @@ class StorageProxyS3(StorageProxy):
             )
 
         except Exception as e:
-            raise StorageProxyException(f"Error saving bytes to bucket. {str(e)}")
+            raise StorageProxyException(f"Error saving Bytes to bucket. {str(e)}")
 
     def get_bytes(self, filename: str) -> bytes:
         try:
@@ -88,30 +86,3 @@ class StorageProxyS3(StorageProxy):
             assert self.root_dir.endswith("/")
         except:
             self.root_dir = f"{self.root_dir}/"
-
-
-# class StorageProxyS3(StorageProxyS3Base):
-#     def __init__(self, bucket_name, root_dir, client) -> None:
-#         super().__init__(bucket_name, root_dir, client)
-
-
-# ----------
-# Created MockStorageProxyS3 for testing purposes
-# Only difference is MockStorageS3Proxy uses MagicMock
-# for the client attribute on StorageProxy
-# ----------
-
-
-# class MockStorageProxyS3(StorageProxyS3Base):
-#     def __init__(self, bucket_name, root_dir, mock_config={}) -> None:
-#         client = MagicMock()
-
-#         super().__init__(bucket_name, root_dir, client)
-
-#         self._init_mock(mock_config)
-
-#     def _init_mock(self, mock_config):
-#         mock_attrs = {
-#             "get_object.return_value":
-#         }
-#         self.client.configure_mock(**mock_attrs)
