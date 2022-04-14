@@ -1,6 +1,8 @@
+from pathlib import Path
 from unittest import TestCase
 from unittest.mock import MagicMock, call
 from postmanager.http import Event
+import boto3
 
 from postmanager.post import Post
 from postmanager.meta_data import PostMetaData
@@ -351,30 +353,36 @@ class TestPostManager(TestCase):
 class TestPostManagerStaticMethods(TestCase):
     def test_setup_s3_with_event(self):
         event_dict = {
-            "bucket_name": "test",
+            "bucket_name": "bucket-name",
             "path": "path/post",
-            "testing": False,
+            "test_api": True,
         }
         event = Event(event_dict)
+
+        # Call
         manager = PostManager.setup_s3_with_event(event)
 
-    def test_setup_s3_with_event_testing(self):
-        event_dict = {
-            "bucket_name": "test",
-            "path": "path/post",
-            "testing": True,
-        }
-        event = Event(event_dict)
-        manager = PostManager.setup_s3_with_event()
+        # Assert
+        self.assertEqual(manager.storage_proxy.root_dir, "post/")
+        self.assertEqual(manager.storage_proxy.bucket_name, "bucket-name")
+        self.assertIsInstance(manager, PostManager)
 
-    def test_setup_s3(self):
-        manager = PostManager.setup_s3_with_event()
+    def test_setup_setup_s3(self):
+        # Call
+        manager = PostManager.setup_s3("bucket-name", "blog", testing=True)
 
-    def test_setup_setup_s3_testing(self):
-        manager = PostManager.setup_s3_with_event()
+        # Assert
+        self.assertEqual(manager.storage_proxy.root_dir, "blog/")
+        self.assertEqual(manager.storage_proxy.bucket_name, "bucket-name")
+        self.assertIsInstance(manager, PostManager)
 
     def test_setup_local(self):
-        manager = PostManager.setup_s3_with_event()
+        template_name = "blog"
+        # Call
+        manager = PostManager.setup_local(template_name, testing=True)
 
-    def test_setup_local_testing(self):
-        manager = PostManager.setup_s3_with_event()
+        # Assert
+        home_path = Path.home()
+        data_path = Path(home_path, ".postmanager", "data", template_name)
+        self.assertEqual(manager.storage_proxy.root_dir, data_path)
+        self.assertIsInstance(manager, PostManager)
