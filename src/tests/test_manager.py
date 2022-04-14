@@ -1,17 +1,18 @@
 from unittest import TestCase
 from unittest.mock import MagicMock, call
+from postmanager.http import Event
+
+from postmanager.post import Post
+from postmanager.meta_data import PostMetaData
+from postmanager.manager import PostManager
 from postmanager.storage_proxy_local import StorageProxyLocal
+from postmanager.exception import StorageProxyException, PostManagerException
 
 from tests.mocks import (
     create_mock_meta,
     create_mock_post,
     create_manager_with_mock_proxy,
 )
-
-from postmanager.post import Post
-from postmanager.meta_data import PostMetaData
-
-from postmanager.exception import StorageProxyException, PostManagerException
 
 
 class TestPostManager(TestCase):
@@ -298,4 +299,82 @@ class TestPostManager(TestCase):
             self.assertIn("Meta data not found", str(e))
 
     def test_init_storage(self):
-        pass
+        manager = create_manager_with_mock_proxy()
+        index_json = [
+            {"id": 1, "title": "First Post", "template": "post"},
+            {"id": 2, "title": "Second Post", "template": "post"},
+        ]
+        manager.storage_proxy.get_json.return_value = index_json
+
+        # Assert
+        call_args = manager.storage_proxy.get_json.call_args_list
+        expexted_call_args = [call("index.json"), call("latest_id.json")]
+        self.assertEqual(call_args, expexted_call_args)
+
+    def test_init_storage_error(self):
+        storage_proxy = MagicMock()
+        storage_proxy.get_json.side_effect = StorageProxyException
+        storage_proxy.save_json = MagicMock()
+        manager = PostManager(storage_proxy)
+
+        # Assert
+        call_args = manager.storage_proxy.save_json.call_args_list
+        expexted_call_args = [
+            call([], "index.json"),
+            call({"latest_id": 0}, "latest_id.json"),
+        ]
+        self.assertEqual(call_args, expexted_call_args)
+
+    def test_verify_meta_more_than_one_found(self):
+        manager = create_manager_with_mock_proxy()
+        meta_data_list = [
+            {"id": 1, "title": "First Post", "template": "post"},
+            {"id": 2, "title": "Second Post", "template": "post"},
+        ]
+
+        with self.assertRaises(PostManagerException) as e:
+            manager._verify_meta(meta_data_list)
+
+        self.assertIn("More than one blog with that ID found", str(e.exception))
+
+    def test_verify_meta_not_found(self):
+        manager = create_manager_with_mock_proxy()
+        meta_data_list = []
+        error_message = "No blog with that ID found"
+
+        with self.assertRaises(PostManagerException) as e:
+            manager._verify_meta(meta_data_list, error_message)
+
+        self.assertIn(error_message, str(e.exception))
+
+
+class TestPostManagerStaticMethods(TestCase):
+    def test_setup_s3_with_event(self):
+        event_dict = {
+            "bucket_name": "test",
+            "path": "path/post",
+            "testing": False,
+        }
+        event = Event(event_dict)
+        manager = PostManager.setup_s3_with_event(event)
+
+    def test_setup_s3_with_event_testing(self):
+        event_dict = {
+            "bucket_name": "test",
+            "path": "path/post",
+            "testing": True,
+        }
+        event = Event(event_dict)
+        manager = PostManager.setup_s3_with_event()
+
+    def test_setup_s3(self):
+        manager = PostManager.setup_s3_with_event()
+
+    def test_setup_setup_s3_testing(self):
+        manager = PostManager.setup_s3_with_event()
+
+    def test_setup_local(self):
+        manager = PostManager.setup_s3_with_event()
+
+    def test_setup_local_testing(self):
+        manager = PostManager.setup_s3_with_event()

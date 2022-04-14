@@ -177,7 +177,7 @@ class PostManager(StorageAdapter):
         except StorageProxyException:
             self.save_json({"latest_id": 0}, "latest_id.json")
 
-    def _verify_meta(self, meta_data_list: List[dict], error_message):
+    def _verify_meta(self, meta_data_list: List[dict], error_message=""):
         if len(meta_data_list) > 1:
             raise PostManagerException("More than one blog with that ID found")
         elif len(meta_data_list) == 0:
@@ -208,17 +208,29 @@ class PostManager(StorageAdapter):
         return post_manager
 
     @staticmethod
-    def setup_s3(bucket_name: str, template: str = "post"):
+    def setup_s3(bucket_name: str, template: str = "post", testing=False):
+
+        if testing:
+            client = MagicMock()
+        else:
+            client = setup_s3_client()
+
         storage_proxy = StorageProxyS3(
-            bucket_name=bucket_name, root_dir=f"{template}/", client=setup_s3_client()
+            bucket_name=bucket_name, root_dir=f"{template}/", client=client
         )
 
         post_manager = PostManager(storage_proxy)
         return post_manager
 
     @staticmethod
-    def setup_local(template: str = "post"):
-        storage_proxy = StorageProxyLocal(root_dir=f"{template}/", client=open)
+    def setup_local(template: str = "post", testing=False):
+
+        if testing:
+            client = MagicMock()
+        else:
+            client = open
+
+        storage_proxy = StorageProxyLocal(root_dir=f"{template}/", client=client)
 
         post_manager = PostManager(storage_proxy)
         return post_manager
