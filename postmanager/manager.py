@@ -62,7 +62,8 @@ class PostManager(StorageAdapter):
         return meta[0]["id"]
 
     def get_post_content(self, post_id):
-        return self.get_json(f"{post_id}/content.json")
+        content = self.get_json(f"{post_id}/content.json")
+        return content
 
     # Post new methods
     # -----
