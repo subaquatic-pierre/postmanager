@@ -1,6 +1,7 @@
+import sys
 from pathlib import Path
 from unittest import TestCase
-from unittest.mock import MagicMock, call
+from unittest.mock import MagicMock, call, patch
 
 from postmanager.post import Post
 from postmanager.http import Event
@@ -13,6 +14,7 @@ from tests.mocks import (
     create_mock_meta,
     create_mock_post,
     create_manager_with_mock_proxy,
+    mock_setup_client,
 )
 
 post_meta_dict_1 = {"id": 1, "title": "Cool Title", "template": "post"}
@@ -330,7 +332,25 @@ class TestPostManager(TestCase):
 
 
 class TestPostManagerStaticMethods(TestCase):
-    def test_setup_s3_with_event(self):
+    @patch("postmanager.manager.setup_s3_client")
+    def test_setup_s3_with_event(self, mock_client_setup):
+        event_dict = {
+            "bucket_name": "bucket-name",
+            "path": "path/post",
+            "test_api": False,
+        }
+        event = Event(event_dict)
+
+        # Call
+        manager = PostManager.setup_s3_with_event(event)
+
+        # Assert
+        self.assertEqual(manager.storage_proxy.root_dir, "post/")
+        self.assertEqual(manager.storage_proxy.bucket_name, "bucket-name")
+        self.assertIsInstance(manager, PostManager)
+        mock_client_setup.assert_called_once()
+
+    def test_setup_s3_with_event_testing(self):
         event_dict = {
             "bucket_name": "bucket-name",
             "path": "path/post",
@@ -346,7 +366,32 @@ class TestPostManagerStaticMethods(TestCase):
         self.assertEqual(manager.storage_proxy.bucket_name, "bucket-name")
         self.assertIsInstance(manager, PostManager)
 
-    def test_setup_setup_s3(self):
+    @patch("postmanager.manager.setup_s3_client")
+    def test_setup_setup_s3(self, mock_client_setup):
+        # Call
+        manager = PostManager.setup_s3("bucket-name", "blog")
+
+        # Assert
+        self.assertEqual(manager.storage_proxy.root_dir, "blog/")
+        self.assertEqual(manager.storage_proxy.bucket_name, "bucket-name")
+        self.assertIsInstance(manager, PostManager)
+        mock_client_setup.assert_called_once()
+
+    @patch("postmanager.manager.setup_local_client")
+    def test_setup_local(self, mock_client_setup):
+        template_name = "blog"
+        home_path = Path.home()
+        data_path = Path(home_path, ".postmanager", "data", template_name)
+
+        # Call
+        manager = PostManager.setup_local(template_name)
+
+        # Assert
+        self.assertEqual(manager.storage_proxy.root_dir, data_path)
+        self.assertIsInstance(manager, PostManager)
+        mock_client_setup.assert_called_once()
+
+    def test_setup_setup_s3_with_testing(self):
         # Call
         manager = PostManager.setup_s3("bucket-name", "blog", testing=True)
 
@@ -355,7 +400,7 @@ class TestPostManagerStaticMethods(TestCase):
         self.assertEqual(manager.storage_proxy.bucket_name, "bucket-name")
         self.assertIsInstance(manager, PostManager)
 
-    def test_setup_local(self):
+    def test_setup_local_with_testing(self):
         template_name = "blog"
         # Call
         manager = PostManager.setup_local(template_name, testing=True)

@@ -9,3 +9,8 @@ def setup_s3_client(credentials={}, client_config={}):
 
     client = boto3.client("s3", config=default_config)
     return client
+
+
+def setup_local_client():
+    client = open
+    return client

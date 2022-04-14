@@ -1,11 +1,10 @@
 from typing import List
 from unittest.mock import MagicMock
-from postmanager.config import setup_s3_client
 from postmanager.meta_data import PostMetaData
 from postmanager.post import Post
 from postmanager.http import Event
 
-from postmanager.config import setup_s3_client
+from postmanager.config import setup_s3_client, setup_local_client
 from postmanager.exception import StorageProxyException, PostManagerException
 from postmanager.interfaces import StorageProxy
 from postmanager.storage_adapter import StorageAdapter
@@ -209,7 +208,9 @@ class PostManager(StorageAdapter):
         return post_manager
 
     @staticmethod
-    def setup_s3(bucket_name: str, template: str = "post", testing=False):
+    def setup_s3(
+        bucket_name: str, template: str = "post", client_config={}, testing=False
+    ):
 
         if testing:
             client = MagicMock()
@@ -224,12 +225,12 @@ class PostManager(StorageAdapter):
         return post_manager
 
     @staticmethod
-    def setup_local(template: str = "post", testing=False):
+    def setup_local(template: str = "post", client_config={}, testing=False):
 
         if testing:
             client = MagicMock()
         else:
-            client = open
+            client = setup_local_client()
 
         storage_proxy = StorageProxyLocal(root_dir=f"{template}/", client=client)
 

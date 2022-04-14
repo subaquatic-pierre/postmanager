@@ -7,6 +7,12 @@ from postmanager.manager import PostManager
 # -----
 # Create Manager Mocks
 # -----
+
+
+def mock_setup_client():
+    return MagicMock()
+
+
 def create_manager_with_mock_proxy():
     storage_proxy = MagicMock()
     post_manager = PostManager(storage_proxy)
