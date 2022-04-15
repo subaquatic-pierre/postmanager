@@ -32,6 +32,7 @@ def setup_mock_post(post_id, meta_dict, content):
     meta_data = setup_mock_meta(post_id, meta_dict)
 
     post = Post(MagicMock(), meta_data, content)
+    post.media_data = MagicMock()
     return post
 
 
