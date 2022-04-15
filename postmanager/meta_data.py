@@ -28,11 +28,17 @@ class MetaData(StorageAdapter):
                 continue
             setattr(self, key, value)
 
-    def _init_attrs(self, attrs):
-        for key in attrs.keys():
-            self._attrs_list.append(key)
+        self._update_attrs_list(meta_dict)
 
-        for key, value in attrs.items():
+    def _update_attrs_list(self, meta_dict):
+        for key in meta_dict.keys():
+            if key not in self._attrs_list:
+                self._attrs_list.append(key)
+
+    def _init_attrs(self, meta_dict):
+        self._update_attrs_list(meta_dict)
+
+        for key, value in meta_dict.items():
             if key == "id":
                 continue
             else:

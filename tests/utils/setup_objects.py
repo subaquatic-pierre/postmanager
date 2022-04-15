@@ -83,3 +83,9 @@ def setup_dummy_proxy(root_dir="test/"):
             self.root_dir = root_dir
 
     return ProxyDummy()
+
+
+def setup_meta_data(id, attrs):
+    proxy = MagicMock()
+    meta_data = MetaData(proxy, id, attrs)
+    return meta_data
