@@ -57,7 +57,7 @@ class Method(ABC):
         post_manager_bucket_proxy_class_name = (
             self.post_manager.storage_proxy.__class__.__name__
         )
-        if post_manager_bucket_proxy_class_name == "MockS3StorageProxy":
+        if post_manager_bucket_proxy_class_name == "MockStorageProxyS3":
             self.error_message = ""
             self.response_body["testing"] = True
 

@@ -1,4 +1,4 @@
-# S3 PostManager
+# PostManager
 
 A simple post manager for managing posts hosted on AWS S3 bucket.
 

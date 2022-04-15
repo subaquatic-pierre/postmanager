@@ -1,20 +1,21 @@
 from typing import List
+from unittest.mock import MagicMock
 from postmanager.meta_data import PostMetaData
 from postmanager.post import Post
 from postmanager.http import Event
 
+from postmanager.config import setup_s3_client, setup_local_client
 from postmanager.exception import StorageProxyException, PostManagerException
-from postmanager.storage_base import ModelStorage, StorageProxy
-from postmanager.s3_storage_proxy import (
-    S3StorageProxy,
-    MockS3StorageProxy,
-)
+from postmanager.interfaces import StorageProxy
+from postmanager.storage_adapter import StorageAdapter
+from postmanager.storage_proxy_local import StorageProxyLocal
+from postmanager.storage_proxy_s3 import StorageProxyS3
 
 
-class PostManager(ModelStorage):
+class PostManager(StorageAdapter):
     def __init__(self, storage_proxy: StorageProxy) -> None:
         super().__init__(storage_proxy)
-        self._init_bucket()
+        self._init_storage()
 
     @property
     def index(self):
@@ -60,10 +61,19 @@ class PostManager(ModelStorage):
         return meta[0]["id"]
 
     def get_post_content(self, post_id):
-        return self.get_json(f"{post_id}/content.json")
+        content = self.get_json(f"{post_id}/content.json")
+        return content
 
     # Post new methods
     # -----
+
+    def new_post_id(self):
+        latest_id_json = self.get_json("latest_id.json")
+        latest_id = latest_id_json.get("latest_id")
+        new_id = latest_id + 1
+
+        self.save_json({"latest_id": new_id}, "latest_id.json")
+        return latest_id
 
     def new_meta_data(self, meta_dict: dict) -> PostMetaData:
         # Add ID to meta if not exists
@@ -113,16 +123,28 @@ class PostManager(ModelStorage):
             return post
 
         except Exception as e:
-            raise Exception(f"Post could not be saved, {str(e)}")
+            raise PostManagerException(f"Post could not be saved, {str(e)}")
 
     def delete_post(self, id: int):
         id = int(id)
         post = self.get_by_id(id)
-        post_files = post.list_files()
 
-        # Add root dir to filenames
-        post_files.append(post.get_root_dir())
-        self.delete_files(post_files)
+        if isinstance(self.storage_proxy, StorageProxyLocal):
+            self.storage_proxy.delete_directory(post.root_dir)
+
+        else:
+            all_post_files = post.list_files()
+            file_keys = [
+                filename.replace(
+                    post.root_dir,
+                    "",
+                )
+                for filename in all_post_files
+            ]
+
+            for key in file_keys:
+                post.delete_file(key)
+            self.delete_file(f"{post.id}/")
 
         # Update index
         new_index = [meta for meta in self.index if meta["id"] != id]
@@ -130,24 +152,17 @@ class PostManager(ModelStorage):
 
     def get_meta_data(self, post_id):
         for index_meta in self.index:
-            meta = PostMetaData.from_json(index_meta)
+            new_proxy = self.new_storage_proxy(f"{post_id}/")
+            meta = PostMetaData.from_json(new_proxy, index_meta)
             if meta.id == int(post_id):
                 return meta
 
         raise PostManagerException("Meta data not found")
 
-    def new_post_id(self):
-        latest_id_json = self.get_json("latest_id.json")
-        latest_id = latest_id_json.get("latest_id")
-        new_id = latest_id + 1
-
-        self.save_json({"latest_id": new_id}, "latest_id.json")
-        return latest_id
-
     # Private methods
     # -----
 
-    def _init_bucket(self):
+    def _init_storage(self):
         # Check if index exists
         try:
             self.get_json("index.json")
@@ -162,12 +177,13 @@ class PostManager(ModelStorage):
         except StorageProxyException:
             self.save_json({"latest_id": 0}, "latest_id.json")
 
-    def _verify_meta(self, meta_data_list: List[dict], error_message):
+    def _verify_meta(self, meta_data_list: List[dict], error_message=""):
         if len(meta_data_list) > 1:
             raise PostManagerException("More than one blog with that ID found")
         elif len(meta_data_list) == 0:
             raise PostManagerException(error_message)
 
+    # -----
     # Static methods
     # -----
 
@@ -176,31 +192,47 @@ class PostManager(ModelStorage):
         bucket_name = event.bucket_name
         path = event.path
         testing = event.testing
-        mock_config = event.mock_config
         template = path.split("/")[1]
 
         if testing:
-            storage_proxy = MockS3StorageProxy(
-                bucket_name=bucket_name,
-                root_dir=f"{template}/",
-                mock_config=mock_config,
-            )
+            client = MagicMock()
         else:
-            storage_proxy = S3StorageProxy(
-                bucket_name=bucket_name,
-                root_dir=f"{template}/",
-            )
+            client = setup_s3_client()
+
+        storage_proxy = StorageProxyS3(
+            bucket_name=bucket_name, root_dir=f"{template}/", client=client
+        )
 
         post_manager = PostManager(storage_proxy)
 
         return post_manager
 
     @staticmethod
-    def setup_s3(bucket_name: str, template: str = "post"):
-        storage_proxy = S3StorageProxy(
-            bucket_name=bucket_name,
-            root_dir=f"{template}/",
+    def setup_s3(
+        bucket_name: str, template: str = "post", client_config={}, testing=False
+    ):
+
+        if testing:
+            client = MagicMock()
+        else:
+            client = setup_s3_client()
+
+        storage_proxy = StorageProxyS3(
+            bucket_name=bucket_name, root_dir=f"{template}/", client=client
         )
+
+        post_manager = PostManager(storage_proxy)
+        return post_manager
+
+    @staticmethod
+    def setup_local(template: str = "post", client_config={}, testing=False):
+
+        if testing:
+            client = MagicMock()
+        else:
+            client = setup_local_client()
+
+        storage_proxy = StorageProxyLocal(root_dir=f"{template}/", client=client)
 
         post_manager = PostManager(storage_proxy)
         return post_manager

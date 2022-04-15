@@ -1,16 +1,16 @@
 import json
+
 from postmanager.media_data import MediaData
-
-from postmanager.storage_base import StorageBase, ModelStorage
-
+from postmanager.interfaces import StorageProxy
+from postmanager.storage_adapter import StorageAdapter
 from postmanager.meta_data import PostMetaData
 from postmanager.exception import StorageProxyException
 
 
-class Post(ModelStorage):
+class Post(StorageAdapter):
     def __init__(
         self,
-        storage_proxy: StorageBase,
+        storage_proxy: StorageProxy,
         meta_data: PostMetaData,
         content="",
     ) -> None:
@@ -75,8 +75,7 @@ class Post(ModelStorage):
     # -----
 
     def _init_media_data(self):
-        media_data_root_dir = f"{self.get_root_dir()}media/"
-        media_storage_proxy = self.new_storage_proxy(media_data_root_dir)
+        media_storage_proxy = self.new_storage_proxy("media/")
         media_data = MediaData(media_storage_proxy)
         self.media_data = media_data
 

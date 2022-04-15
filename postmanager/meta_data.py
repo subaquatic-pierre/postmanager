@@ -1,8 +1,9 @@
-from postmanager.storage_base import StorageBase, ModelStorage
+from postmanager.interfaces import StorageProxy
+from postmanager.storage_adapter import StorageAdapter
 
 
-class PostMetaData(ModelStorage):
-    def __init__(self, storage_proxy: StorageBase, id, attrs) -> None:
+class PostMetaData(StorageAdapter):
+    def __init__(self, storage_proxy: StorageProxy, id, attrs) -> None:
         super().__init__(storage_proxy)
 
         self.id = id
@@ -18,7 +19,7 @@ class PostMetaData(ModelStorage):
         return data
 
     def save(self):
-        self.save_json(self.to_json(), "meta.json")
+        self.save_json(self.to_json(), "meta_data.json")
 
     def update(self, meta_dict: dict):
         for key, value in meta_dict.items():

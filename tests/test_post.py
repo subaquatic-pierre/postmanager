@@ -1,7 +1,7 @@
 from unittest import TestCase
 from unittest.mock import MagicMock
 
-from postmanager.manager import PostManager, S3StorageProxy
+from postmanager.manager import PostManager
 
 
 class TestPost(TestCase):

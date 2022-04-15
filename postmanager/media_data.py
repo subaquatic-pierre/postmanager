@@ -1,10 +1,11 @@
-from postmanager.storage_base import ModelStorage, StorageBase
+from postmanager.interfaces import StorageInterface, StorageProxy
+from postmanager.storage_adapter import StorageAdapter
 from postmanager.exception import StorageProxyException
 from base64 import b64decode, b64encode
 
 
-class MediaData(ModelStorage):
-    def __init__(self, storage_proxy: StorageBase) -> None:
+class MediaData(StorageAdapter):
+    def __init__(self, storage_proxy: StorageProxy) -> None:
         super().__init__(storage_proxy)
 
         self._unsaved_media = {}
@@ -14,9 +15,6 @@ class MediaData(ModelStorage):
         self._init_media_index()
 
     def save(self):
-        # Create media directory
-        self.save_bytes(b"", "media/")
-
         # Save unsaved images
         if self._unsaved_media:
             self._save_media()
@@ -107,6 +105,14 @@ class MediaData(ModelStorage):
 
     def _save_media(self):
         for media_name, media_data in self._unsaved_media.items():
+
+            # First remove media if exists
+            if media_name in self.media_index:
+                # Get old media data
+                old_media_data = self.media_index[media_name]
+                old_media_ext = self._get_media_file_ext(old_media_data["file_type"])
+                old_filename = f"{media_name}.{old_media_ext}"
+                self.delete_file(old_filename)
 
             file_ext = self._get_media_file_ext(media_data["file_type"])
             filename = f"{media_name}.{file_ext}"
