@@ -23,14 +23,3 @@ def create_event_and_context(path, body={}, mock_bucket=True, mock_config={}):
     }
     context = {}
     return event, context
-
-
-def set_get_object_return_value(return_value):
-    class StreamingBodyMock:
-        def __init__(self, return_value) -> None:
-            self.return_value = return_value
-
-        def read(self):
-            return json.dumps(self.return_value)
-
-    return {"Body": StreamingBodyMock(return_value)}

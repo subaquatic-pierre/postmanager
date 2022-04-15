@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 from postmanager.exception import StorageProxyException
 from postmanager.storage_proxy_s3 import StorageProxyS3
 
-from tests.setup_objects import setup_storage_proxy_s3, setup_streaming_body
+from tests.utils.setup_objects import setup_storage_proxy_s3, setup_streaming_body
 
 BUCKET_NAME = "test-bucket"
 TEMPLATE = "test"

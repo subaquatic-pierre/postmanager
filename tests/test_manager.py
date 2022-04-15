@@ -6,11 +6,11 @@ from unittest.mock import MagicMock, call, patch
 from postmanager.post import Post
 from postmanager.http import Event
 from postmanager.manager import PostManager
-from postmanager.meta_data import PostMetaData
+from postmanager.meta_data import MetaData
 from postmanager.storage_proxy_local import StorageProxyLocal
 from postmanager.exception import StorageProxyException, PostManagerException
 
-from tests.setup_objects import (
+from tests.utils.setup_objects import (
     setup_mock_meta,
     setup_mock_post,
     setup_manager,
@@ -62,8 +62,8 @@ class TestPostManager(TestCase):
         ]
         manager.storage_proxy.get_json.return_value = meta_index
         manager._verify_meta = MagicMock()
-        manager.build_meta_data = MagicMock()
-        manager.build_post = MagicMock(
+        manager._build_meta_data = MagicMock()
+        manager._build_post = MagicMock(
             return_value=setup_mock_post(1, META_DICT_1, POST_CONTENT)
         )
 
@@ -81,10 +81,10 @@ class TestPostManager(TestCase):
         meta_dict = {"id": 1, "title": "Cool Title"}
 
         # Call
-        meta_data = manager.build_meta_data(meta_dict)
+        meta_data = manager._build_meta_data(meta_dict)
 
         # Assert
-        self.assertIsInstance(meta_data, PostMetaData)
+        self.assertIsInstance(meta_data, MetaData)
         self.assertEqual(meta_data.title, "Cool Title")
         self.assertEqual(meta_data.id, 1)
 
@@ -93,7 +93,7 @@ class TestPostManager(TestCase):
         meta_data = setup_mock_meta(1, META_DICT_1)
 
         # Call
-        post = manager.build_post(meta_data, POST_CONTENT)
+        post = manager._build_post(meta_data, POST_CONTENT)
 
         # Assert
         self.assertEqual(post.id, 1)
@@ -268,7 +268,7 @@ class TestPostManager(TestCase):
 
         # Assert
         self.assertEqual(meta_data.id, 1)
-        self.assertIsInstance(meta_data, PostMetaData)
+        self.assertIsInstance(meta_data, MetaData)
 
     def test_get_meta_data_error(self):
         manager = setup_manager()

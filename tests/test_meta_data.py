@@ -1,5 +1,5 @@
 from unittest import TestCase
 
 
-class TestResponse(TestCase):
+class TestMetaData(TestCase):
     pass

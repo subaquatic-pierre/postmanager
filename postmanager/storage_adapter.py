@@ -38,14 +38,14 @@ class StorageAdapter(StorageInterface):
     def delete_file(self, filename) -> None:
         self.storage_proxy.delete_file(filename)
 
-    def build_new_route(self, new_root):
+    def _build_new_root(self, new_root):
         if isinstance(self.storage_proxy, StorageProxyLocal):
             return Path(self.root_dir, new_root)
         else:
             return f"{self.root_dir}{new_root}"
 
     def new_storage_proxy(self, new_root: str) -> StorageProxy:
-        new_root_dir = self.build_new_route(new_root)
+        new_root_dir = self._build_new_root(new_root)
 
         if isinstance(self.storage_proxy, StorageProxyS3):
             return StorageProxyS3(

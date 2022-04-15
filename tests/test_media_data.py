@@ -1,5 +1,5 @@
 from unittest import TestCase
 
 
-class TestEvent(TestCase):
+class TestMediaData(TestCase):
     pass

@@ -2,7 +2,7 @@ from postmanager.interfaces import StorageProxy
 from postmanager.storage_adapter import StorageAdapter
 
 
-class PostMetaData(StorageAdapter):
+class MetaData(StorageAdapter):
     def __init__(self, storage_proxy: StorageProxy, id, attrs) -> None:
         super().__init__(storage_proxy)
 
@@ -42,6 +42,6 @@ class PostMetaData(StorageAdapter):
     def from_json(storage_proxy, meta_dict: dict):
         assert meta_dict.get("id") != None, "meta_dict object must contain an ID key"
 
-        post_meta = PostMetaData(storage_proxy, meta_dict.get("id"), meta_dict)
+        post_meta = MetaData(storage_proxy, meta_dict.get("id"), meta_dict)
 
         return post_meta
