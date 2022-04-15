@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 from postmanager.exception import StorageProxyException
 from postmanager.storage_proxy_local import StorageProxyLocal
 
-from tests.setup_objects import setup_storage_proxy_local
+from tests.utils.setup_objects import setup_storage_proxy_local
 
 ROOT_DIR = "test"
 JSON_BODY = {"testing": "ok"}

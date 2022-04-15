@@ -3,7 +3,7 @@ import json
 from postmanager.media_data import MediaData
 from postmanager.interfaces import StorageProxy
 from postmanager.storage_adapter import StorageAdapter
-from postmanager.meta_data import PostMetaData
+from postmanager.meta_data import MetaData
 from postmanager.exception import StorageProxyException
 
 
@@ -11,7 +11,7 @@ class Post(StorageAdapter):
     def __init__(
         self,
         storage_proxy: StorageProxy,
-        meta_data: PostMetaData,
+        meta_data: MetaData,
         content="",
     ) -> None:
         super().__init__(storage_proxy)

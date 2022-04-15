@@ -1,6 +1,6 @@
 from typing import List
 from unittest.mock import MagicMock
-from postmanager.meta_data import PostMetaData
+from postmanager.meta_data import MetaData
 from postmanager.post import Post
 from postmanager.http import Event
 
@@ -37,21 +37,10 @@ class PostManager(StorageAdapter):
         self._verify_meta(meta_dict_list, "No blog with that ID found")
 
         # Build meta
-        meta_data = self.build_meta_data(meta_dict_list[0])
+        meta_data = self._build_meta_data(meta_dict_list[0])
 
         # Build post
-        post = self.build_post(meta_data)
-
-        return post
-
-    def build_meta_data(self, meta_dict: dict):
-        storage_proxy = self.new_storage_proxy(f"{meta_dict['id']}/")
-        post_meta_data = PostMetaData.from_json(storage_proxy, meta_dict)
-        return post_meta_data
-
-    def build_post(self, post_meta: PostMetaData, content="") -> Post:
-        storage_proxy = self.new_storage_proxy(f"{post_meta.id}/")
-        post = Post(storage_proxy, post_meta, content=content)
+        post = self._build_post(meta_data)
 
         return post
 
@@ -75,7 +64,7 @@ class PostManager(StorageAdapter):
         self.save_json({"latest_id": new_id}, "latest_id.json")
         return latest_id
 
-    def new_meta_data(self, meta_dict: dict) -> PostMetaData:
+    def new_meta_data(self, meta_dict: dict) -> MetaData:
         # Add ID to meta if not exists
         post_id = meta_dict.get("id", False)
 
@@ -84,7 +73,7 @@ class PostManager(StorageAdapter):
             meta_dict["id"] = new_id
 
         new_storage_proxy = self.new_storage_proxy(f"{meta_dict['id']}/")
-        new_meta_data = PostMetaData.from_json(new_storage_proxy, meta_dict)
+        new_meta_data = MetaData.from_json(new_storage_proxy, meta_dict)
         return new_meta_data
 
     def new_post(self, post_meta: dict, content="") -> Post:
@@ -153,7 +142,7 @@ class PostManager(StorageAdapter):
     def get_meta_data(self, post_id):
         for index_meta in self.index:
             new_proxy = self.new_storage_proxy(f"{post_id}/")
-            meta = PostMetaData.from_json(new_proxy, index_meta)
+            meta = MetaData.from_json(new_proxy, index_meta)
             if meta.id == int(post_id):
                 return meta
 
@@ -161,6 +150,17 @@ class PostManager(StorageAdapter):
 
     # Private methods
     # -----
+
+    def _build_meta_data(self, meta_dict: dict):
+        storage_proxy = self.new_storage_proxy(f"{meta_dict['id']}/")
+        post_meta_data = MetaData.from_json(storage_proxy, meta_dict)
+        return post_meta_data
+
+    def _build_post(self, post_meta: MetaData, content="") -> Post:
+        storage_proxy = self.new_storage_proxy(f"{post_meta.id}/")
+        post = Post(storage_proxy, post_meta, content=content)
+
+        return post
 
     def _init_storage(self):
         # Check if index exists
