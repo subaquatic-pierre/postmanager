@@ -91,4 +91,4 @@ class StorageProxyLocal(StorageProxy):
             root_dir_path = Path(default_root_dir)
 
         root_dir_path.mkdir(parents=True, exist_ok=True)
-        self.root_dir = default_root_dir
+        self.root_dir = root_dir_path

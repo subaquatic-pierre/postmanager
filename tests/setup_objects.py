@@ -63,30 +63,3 @@ def setup_streaming_body(return_value, is_bytes=False):
     object = {"Body": StreamingBodyMock()}
 
     return object
-
-
-def setup_mock_file_reader(return_value=""):
-    class FileReader:
-        def __init__(self) -> None:
-            self.call_data = None
-            self.method_calls = []
-
-        def read_text(self):
-            return return_value
-
-        def read_bytes(self):
-            return return_value
-
-        def write_text(self, data):
-            self.call_data = data
-            return MagicMock()
-
-        def write_bytes(self, data):
-            self.call_data = data
-            return MagicMock()
-
-        def unlink(self, *args, **kwargs):
-            frame = inspect.currentframe()
-            self.method_calls.append(inspect.getframeinfo(frame).function)
-
-    return FileReader()
