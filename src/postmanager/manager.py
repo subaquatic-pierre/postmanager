@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from unittest.mock import MagicMock
 from postmanager.meta_data import MetaData
 from postmanager.post import Post
@@ -18,8 +18,8 @@ class PostManager(StorageAdapter):
     def __init__(self, storage_proxy: StorageProxy) -> None:
         """
         Args:
-            storage_proxy (StorageProxy): Storage proxy used to
-            communicate with storage system.
+            storage_proxy (StorageProxy): Storage proxy used
+             to communicate with storage system.
         """
 
         super().__init__(storage_proxy)
@@ -27,15 +27,20 @@ class PostManager(StorageAdapter):
 
     @property
     def index(self):
-        """str: Return the index.json stored on disk."""
+        """
+        Get meta data of all posts managed by this manager.
+        """
         obj_json = self.get_json("index.json")
         return obj_json
 
-    def update_index(self, new_index: list) -> None:
+    def update_index(self, new_index: List) -> None:
         """Writes new index to storage.
 
         Args:
-            new_index (list): New index list to be written to storage.
+            new_index (List): New index list to be written to storage.
+
+        Returns:
+            None: No return value
 
         """
         self.save_json(new_index, "index.json")
@@ -43,12 +48,22 @@ class PostManager(StorageAdapter):
     # Post get methods
     # -----
 
-    def get_by_id(self, id) -> Post:
-        id = int(id)
+    def get_by_id(self, post_id: int) -> Post:
+        """Fetch an existing post from storage.
+
+        Args:
+            new_index (List): New index list to be written to storage.
+
+        Returns:
+            Post: Raises PostManagerException if not found.
+
+        """
+        post_id = int(post_id)
 
         meta_dict_list = [
-            meta_data for meta_data in self.index if meta_data["id"] == id
+            meta_data for meta_data in self.index if meta_data["id"] == post_id
         ]
+
         self._verify_meta(meta_dict_list, "No blog with that ID found")
 
         # Build meta
@@ -60,11 +75,29 @@ class PostManager(StorageAdapter):
         return post
 
     def title_to_id(self, title: str) -> int:
+        """Get ID number of given post title.
+
+        Args:
+            title (str): Title of post.
+
+        Returns:
+            int:  Raises PostManagerException if not found.
+
+        """
         meta = [blog_meta for blog_meta in self.index if blog_meta["title"] == title]
         self._verify_meta(meta, "No blog with that title found")
         return meta[0]["id"]
 
-    def get_post_content(self, post_id):
+    def get_post_content(self, post_id: int) -> dict:
+        """Get content of post with given id.
+
+        Args:
+            post_id (int): ID of the post.
+
+        Returns:
+            dict:  JSON content of post.
+
+        """
         content = self.get_json(f"{post_id}/content.json")
         return content
 
@@ -72,6 +105,12 @@ class PostManager(StorageAdapter):
     # -----
 
     def new_post_id(self):
+        """Get the latest post ID which can be used for a new post.
+
+        Returns:
+            int:  New post ID, used to create new post.
+
+        """
         latest_id_json = self.get_json("latest_id.json")
         latest_id = latest_id_json.get("latest_id")
         new_id = latest_id + 1
@@ -80,6 +119,15 @@ class PostManager(StorageAdapter):
         return latest_id
 
     def new_meta_data(self, meta_dict: dict) -> MetaData:
+        """Create new MetaData object.
+
+        Args:
+            meta_dict (dict):  New post ID, used to create new post.
+
+        Returns:
+            MetaData: New MetaData object to be used to create new post.
+
+        """
         # Add ID to meta if not exists
         post_id = meta_dict.get("id", False)
 
@@ -92,6 +140,16 @@ class PostManager(StorageAdapter):
         return new_meta_data
 
     def new_post(self, post_meta: dict, content="") -> Post:
+        """Create new Post object.
+
+        Args:
+            meta_dict (dict):  MetaData object associated with this post.
+            content (obj, optional): JSON parsable object or string.
+
+        Returns:
+            Post: New Post object.
+
+        """
         new_post_meta = self.new_meta_data(post_meta)
 
         post_storage_proxy = self.new_storage_proxy(f"{new_post_meta.id}/")
@@ -102,7 +160,16 @@ class PostManager(StorageAdapter):
     # Post update methods
     # -----
 
-    def save_post(self, post: Post):
+    def save_post(self, post: Post) -> Post:
+        """Save new Post to storage.
+
+        Args:
+            post (Post):  New Post object intented to save.
+
+        Returns:
+            Post: Post object just saved, raises PostManagerExecption on error.
+
+        """
         # Update index and save post
         try:
             new_index = [meta for meta in self.index]
@@ -129,9 +196,18 @@ class PostManager(StorageAdapter):
         except Exception as e:
             raise PostManagerException(f"Post could not be saved, {str(e)}")
 
-    def delete_post(self, id: int):
-        id = int(id)
-        post = self.get_by_id(id)
+    def delete_post(self, post_id: int):
+        """Remove post and all corresponding data from storage.
+
+        Args:
+            post_id (int):  ID of post to be deleted.
+
+        Returns:
+            None: Raises PostManagerExecption on error.
+
+        """
+        post_id = int(post_id)
+        post = self.get_by_id(post_id)
 
         if isinstance(self.storage_proxy, StorageProxyLocal):
             self.storage_proxy.delete_directory(post.root_dir)
@@ -151,10 +227,19 @@ class PostManager(StorageAdapter):
             self.delete_file(f"{post.id}/")
 
         # Update index
-        new_index = [meta for meta in self.index if meta["id"] != id]
+        new_index = [meta for meta in self.index if meta["id"] != post_id]
         self.update_index(new_index)
 
-    def get_meta_data(self, post_id):
+    def get_meta_data(self, post_id: int) -> MetaData:
+        """Get MetaData for corresponding post ID.
+
+        Args:
+            post_id (int):  ID of post to be deleted.
+
+        Returns:
+            MetaData: Raises PostManagerExecption on error.
+
+        """
         for index_meta in self.index:
             new_proxy = self.new_storage_proxy(f"{post_id}/")
             meta = MetaData.from_json(new_proxy, index_meta)
@@ -204,6 +289,15 @@ class PostManager(StorageAdapter):
 
     @staticmethod
     def setup_s3_with_event(event: Event):
+        """Create new PostManager object for S3 storage with an Event object.
+
+        Args:
+            event (Event):  Event object, usually created with Request event.
+
+        Returns:
+            PostManager: New instance of PostManager, configured to use with AWS S3.
+
+        """
         bucket_name = event.bucket_name
         path = event.path
         testing = event.testing
@@ -226,6 +320,18 @@ class PostManager(StorageAdapter):
     def setup_s3(
         bucket_name: str, template: str = "post", client_config={}, testing=False
     ):
+        """Create new PostManager object for AWS S3 storage.
+
+        Args:
+            bucket_name (str):  Name of the S3 bucket to use as storage.
+            template (str, optional):  Name of template of Post, used as root_dir configuration.
+            client_config (obj, optional): Configuration used to configure s3_client
+            testing (bool, optional): Weather testing is True will determine client type.
+
+        Returns:
+            PostManager: New instance of PostManager, configured to use with AWS S3.
+
+        """
 
         if testing:
             client = MagicMock()
@@ -241,6 +347,17 @@ class PostManager(StorageAdapter):
 
     @staticmethod
     def setup_local(template: str = "post", client_config={}, testing=False):
+        """Create new PostManager object for AWS S3 storage.
+
+        Args:
+            template (str, optional):  Name of template of Post, used as root_dir configuration.
+            client_config (obj, optional): Configuration used to configure local_client
+            testing (bool, optional): Weather testing is True will determine client type.
+
+        Returns:
+            PostManager: New instance of PostManager, configured to use with local file storage.
+
+        """
 
         if testing:
             client = MagicMock()

@@ -8,12 +8,21 @@ from postmanager.exception import StorageProxyException
 
 
 class Post(StorageAdapter):
+    """Main Post class used to manager single post operations."""
+
     def __init__(
         self,
         storage_proxy: StorageProxy,
         meta_data: MetaData,
         content="",
     ) -> None:
+        """
+        Args:
+            storage_proxy (StorageProxy): Storage proxy used
+             to communicate with storage system.
+            meta_data (obj): MetaData object associated with this post.
+            content (obj, optional): JSON parsable object or string.
+        """
         super().__init__(storage_proxy)
 
         # Base data
@@ -23,7 +32,13 @@ class Post(StorageAdapter):
         self._init_content(content)
         self._init_media_data()
 
-    def to_json(self):
+    def to_json(self) -> dict:
+        """Get JSON representation of the post.
+
+        Returns:
+            dict: JSON representation of the post.
+
+        """
         return {
             "meta_data": self.meta_data.to_json(),
             "content": self.content,
@@ -34,7 +49,16 @@ class Post(StorageAdapter):
     # Update methods
     # -----
 
-    def update_meta_data(self, meta_dict: dict):
+    def update_meta_data(self, meta_dict: dict) -> None:
+        """Update meta data associated with the post.
+
+        Args:
+            meta_dict (dict):  New Post object intented to save.
+
+        Returns:
+            Post: Post object just saved, raises PostManagerExecption on error.
+
+        """
         self.meta_data.update(meta_dict)
 
     def update_content(self, content):

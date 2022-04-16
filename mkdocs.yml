@@ -17,8 +17,8 @@ nav:
       - Troubleshooting: usage/troubleshooting.md
 
   - Code Reference:
-      - Overview: code/index.md
       - PostManager: code/manager.md
+      - Post: code/post.md
 
   - Author's website: https://pierredutoit.me
 
