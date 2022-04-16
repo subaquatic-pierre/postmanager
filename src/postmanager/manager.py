@@ -144,7 +144,7 @@ class PostManager(StorageAdapter):
 
         Args:
             meta_dict (dict):  MetaData object associated with this post.
-            content (obj, optional): JSON parsable object or string.
+            content (dict, optional): JSON parsable object or string.
 
         Returns:
             Post: New Post object.
@@ -325,7 +325,7 @@ class PostManager(StorageAdapter):
         Args:
             bucket_name (str):  Name of the S3 bucket to use as storage.
             template (str, optional):  Name of template of Post, used as root_dir configuration.
-            client_config (obj, optional): Configuration used to configure s3_client
+            client_config (dict, optional): Configuration used to configure s3_client
             testing (bool, optional): Weather testing is True will determine client type.
 
         Returns:
@@ -351,7 +351,7 @@ class PostManager(StorageAdapter):
 
         Args:
             template (str, optional):  Name of template of Post, used as root_dir configuration.
-            client_config (obj, optional): Configuration used to configure local_client
+            client_config (dict, optional): Configuration used to configure local_client
             testing (bool, optional): Weather testing is True will determine client type.
 
         Returns:
