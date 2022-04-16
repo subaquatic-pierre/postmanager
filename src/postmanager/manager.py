@@ -13,16 +13,31 @@ from postmanager.storage_proxy_s3 import StorageProxyS3
 
 
 class PostManager(StorageAdapter):
+    """Main PostManager class used to manager all post operations."""
+
     def __init__(self, storage_proxy: StorageProxy) -> None:
+        """
+        Args:
+            storage_proxy (StorageProxy): Storage proxy used to
+            communicate with storage system.
+        """
+
         super().__init__(storage_proxy)
         self._init_storage()
 
     @property
     def index(self):
+        """str: Return the index.json stored on disk."""
         obj_json = self.get_json("index.json")
         return obj_json
 
-    def update_index(self, new_index: list):
+    def update_index(self, new_index: list) -> None:
+        """Writes new index to storage.
+
+        Args:
+            new_index (list): New index list to be written to storage.
+
+        """
         self.save_json(new_index, "index.json")
 
     # Post get methods

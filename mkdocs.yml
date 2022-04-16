@@ -1,8 +1,26 @@
 site_name: Postmanager
 site_url: https://postmanager.com/
+
 nav:
-  - Home: index.md
-  - About: about.md
+  - Home:
+      - Overview: index.md
+      - Contributing: contributing.md
+      - License: license.md
+      - Code of Conduct: code_of_conduct.md
+      - Coverage report: coverage.md
+      - Changelog: changelog.md
+
+  - Usage:
+      - Overview: usage/index.md
+      - Theming: usage/theming.md
+      - Recipes: usage/recipes.md
+      - Troubleshooting: usage/troubleshooting.md
+
+  - Code Reference:
+      - Overview: code/index.md
+      - PostManager: code/manager.md
+
+  - Author's website: https://pierredutoit.me
 
 theme:
   name: material
@@ -15,8 +33,8 @@ theme:
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: teal
-      accent: purple
+      primary: blue
+      accent: teal
       toggle:
         icon: material/weather-sunny
         name: Switch to dark mode
@@ -32,6 +50,32 @@ extra_css:
   - css/style.css
   - css/material.css
   - css/mkdocstrings.css
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.emoji
+  - pymdownx.magiclink
+  - pymdownx.snippets:
+      check_paths: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist
+  - toc:
+      permalink: "«"
+
+plugins:
+  - search
+  - coverage
+  - mkdocstrings:
+      handlers:
+        python:
+          selection:
+            docstring_style: google
+
+      watch:
+        - src/postmanager
 
 extra:
   generator: false

@@ -21,7 +21,7 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    package_dir={".": "postmanager"},
+    package_dir={"src": "postmanager"},
     packages=find_packages(exclude=["tests,site,docs"]),
     test_suite="tests",
     python_requires=">=3.6,<4",
