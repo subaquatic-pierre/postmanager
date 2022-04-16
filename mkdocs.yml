@@ -1,0 +1,37 @@
+site_name: Postmanager
+site_url: https://postmanager.com/
+nav:
+  - Home: index.md
+  - About: about.md
+
+theme:
+  name: material
+  icon:
+    logo: material/currency-sign
+  features:
+    - content.code.annotate
+    - navigation.tabs
+    - navigation.top
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: purple
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: lime
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
+
+extra_css:
+  - css/style.css
+  - css/material.css
+  - css/mkdocstrings.css
+
+extra:
+  generator: false

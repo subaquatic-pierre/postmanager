@@ -22,7 +22,7 @@ setup(
         "Operating System :: OS Independent",
     ],
     package_dir={".": "postmanager"},
-    packages=find_packages(exclude=["tests"]),
+    packages=find_packages(exclude=["tests,site,docs"]),
     test_suite="tests",
     python_requires=">=3.6,<4",
     install_requires=["boto3==1.21.38"],
