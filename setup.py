@@ -5,7 +5,7 @@ with open("README.md", "r") as f:
 
 setup(
     name="postmanager",
-    version="0.1.4",
+    version="0.1.5",
     description="Post manager to manage all post types with various storage backends",
     long_description=readme,
     long_description_content_type="text/markdown",
