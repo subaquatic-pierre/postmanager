@@ -17,7 +17,7 @@ setup(
         "Bug Tracker": "https://github.com/subaquatic-pierre/postmanager/issues"
     },
     classifiers=[
-        "Programming Language :: Python::3",
+        "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
