@@ -26,4 +26,5 @@ setup(
     test_suite="tests",
     python_requires=">=3.6,<4",
     install_requires=["boto3==1.21.38"],
+    entry_points={"console_scripts": ["postmanager=postmanager.cli:main"]},
 )
