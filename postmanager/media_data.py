@@ -15,15 +15,19 @@ class MediaData(StorageAdapter):
         self._init_media_index()
 
     def save(self):
+        updated = False
         # Save unsaved images
         if self._unsaved_media:
+            updated = True
             self._save_media()
 
         if self._undeleted_media:
+            updated = True
             self._delete_media()
 
         # Update media_index
-        self._save_media_index()
+        if updated:
+            self._save_media_index()
 
     def add_media(
         self, media_data, media_name, media_data_format="data_url", overwrite=True
@@ -79,8 +83,8 @@ class MediaData(StorageAdapter):
 
             return image_data_url
 
-        except StorageProxyException as e:
-            return f"{str(e)}"
+        except Exception as e:
+            return f"Error getting media. {str(e)}"
 
     # -----
     # Private methods

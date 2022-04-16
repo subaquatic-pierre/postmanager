@@ -1,5 +1,4 @@
 import json
-import inspect
 from unittest.mock import MagicMock
 
 from postmanager.post import Post
@@ -8,9 +7,10 @@ from postmanager.manager import PostManager
 from postmanager.storage_proxy_s3 import StorageProxyS3
 from postmanager.storage_proxy_local import StorageProxyLocal
 from postmanager.storage_adapter import StorageAdapter
+from postmanager.media_data import MediaData
 
 # -----
-# Manager Mocks
+# Manager
 # -----
 
 
@@ -18,6 +18,11 @@ def setup_manager():
     storage_proxy = MagicMock()
     post_manager = PostManager(storage_proxy)
     return post_manager
+
+
+# -----
+# MetaData
+# -----
 
 
 def setup_mock_meta(post_id, meta_dict):
@@ -28,16 +33,40 @@ def setup_mock_meta(post_id, meta_dict):
     return meta_data
 
 
+# -----
+# Post
+# -----
+
+
 def setup_mock_post(post_id, meta_dict, content):
     meta_data = setup_mock_meta(post_id, meta_dict)
 
     post = Post(MagicMock(), meta_data, content)
+    post.media_data = MagicMock()
     return post
+
+
+# -----
+# Media Data
+# -----
+
+
+def setup_media_data():
+    media_data = MediaData(MagicMock())
+    return media_data
 
 
 # -----
 # Storage Proxy
 # -----
+
+
+def setup_dummy_proxy(root_dir="test/"):
+    class ProxyDummy:
+        def __init__(self) -> None:
+            self.root_dir = root_dir
+
+    return ProxyDummy()
 
 
 def setup_storage_proxy_local(root_dir):
@@ -75,17 +104,3 @@ def setup_storage_adapter(root_dir="test/"):
     adapter = StorageAdapter(proxy)
 
     return adapter
-
-
-def setup_dummy_proxy(root_dir="test/"):
-    class ProxyDummy:
-        def __init__(self) -> None:
-            self.root_dir = root_dir
-
-    return ProxyDummy()
-
-
-def setup_meta_data(id, attrs):
-    proxy = MagicMock()
-    meta_data = MetaData(proxy, id, attrs)
-    return meta_data
