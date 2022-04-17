@@ -11,7 +11,7 @@ nav:
       - Changelog: changelog.md
 
   - Usage:
-      - Configuration: usage/index.md
+      - Configuration: usage/configuration.md
       - Examples: usage/examples.md
 
   - Code Reference:
