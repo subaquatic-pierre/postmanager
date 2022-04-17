@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List
 from unittest.mock import MagicMock
 from postmanager.meta_data import MetaData
 from postmanager.post import Post

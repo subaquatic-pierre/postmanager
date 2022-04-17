@@ -19,6 +19,11 @@ nav:
   - Code Reference:
       - PostManager: code/manager.md
       - Post: code/post.md
+      - MediaData: code/media_data.md
+      - MetaData: code/meta_data.md
+      - StorageProxyLocal: code/storage_proxy_local.md
+      - StorageProxyS3: code/storage_proxy_s3.md
+      - StorageAdapter: code/storage_adapter.md
 
   - Author's website: https://pierredutoit.me
 

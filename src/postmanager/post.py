@@ -12,7 +12,9 @@ class Post(StorageAdapter):
 
     Attributes:
         storage_proxy (StorageProxy): Storage proxy used to communicate with storage backend.
+        id (int): ID of the post.
         meta_data (MetaData): MetaData object holding all meta data values of the post.
+        media_data (MediaData): MediaData object to manage all media data associated with the post.
         content (dict): JSON parsable content associated with the post
     """
 
@@ -34,9 +36,8 @@ class Post(StorageAdapter):
         # Base data
         self.id = meta_data.id
         self.meta_data = meta_data
-
-        self._init_content(content)
-        self._init_media_data()
+        self.media_data = self._init_media_data()
+        self.content = self._init_content(content)
 
     def to_json(self) -> dict:
         """Get JSON representation of the post.
@@ -105,7 +106,7 @@ class Post(StorageAdapter):
         return self.media_data.media_index
 
     def add_media(self, media_data: str, media_name: str, **kwargs) -> None:
-        """Update content associated with the post.
+        """Add media to be saved.
 
         Args:
             media_data (str):  Byte64 encoded string in DataURL format.
@@ -161,19 +162,18 @@ class Post(StorageAdapter):
     def _init_media_data(self):
         media_storage_proxy = self.new_storage_proxy("media/")
         media_data = MediaData(media_storage_proxy)
-        self.media_data = media_data
+        return media_data
 
     def _init_content(self, content):
         if content:
-            self.content = content
-            return
+            return content
 
         try:
             data = self.get_json(f"content.json")
-            self.content = data
+            return data
 
         except StorageProxyException:
-            self.content = ""
+            return ""
 
     def __str__(self):
         return json.dumps(self.meta_data.to_json(), indent=2)
