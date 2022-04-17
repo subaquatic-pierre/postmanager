@@ -1,7 +1,86 @@
-# Usage
+# Configuration
 
-## Autodoc syntax
+## Local Storage
 
+No credentials are need to use local storage. If you choose local storage as the setup method for PostManager it is only required that the user have permission to read and write to the home directory, which is by default true.
+
+## AWS S3 Storage
+
+To use AWS storage you will need to configure AWS account credentials. This can be done using AWS CLI or manually add config files to your home directory.
+
+### Manual Configuration
+
+These files will need to be created in your home directory.
+
+```
+📁 {home}
+└─╴📁 .aws
+  ├─╴📄 config
+  └─╴📄 credentials
+```
+
+```ini title="/home/user/.aws/config"
+[default]
+region = us-east-1
+output = json
+```
+
+```ini title="/home/user/.aws/credentials"
+[default]
+aws_access_key_id = {ACCESS_KEY}
+aws_secret_access_key = {SECRET_KEY}
+```
+
+### Configure with CLI
+
+You will need to install AWS CLI. The following AWS docs will explain how to install and configure the CLI.
+
+- [Installation](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+- [Configuration](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html)
+
+Below is the script to run if you have AWS CLI installed.
+
+```
+$ aws configure
+AWS Access Key ID [None]: AKIAIOSFODNN7EXAMPLE
+AWS Secret Access Key [None]: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+Default region name [None]: us-west-2
+Default output format [None]: json
+```
+
+## File storage structure
+
+Below is an example of default storage locations, if you do not want to change it you will not need to make any configuration changes. The home directory differs depending on storage type, whether it is S3 storage or local storage, below is an explanation of the difference:
+
+!!! note "Home directory difference"
+
+- Mac/Linux: `/home/{user}/.postmanager/data`
+- Windows: `C:\Users\{user}\.postmanager\data`
+- AWS: `{bucket-name}`
+
+```
+📁 {home}
+└─╴📁 post: {template}
+    └─╴📁 1: {post-id}
+      └─╴📁 media
+        ├─╴📄 cover_photo.jpeg
+        └─╴📄 media_index.json
+      ├─╴📄 meta_data.json
+      └─╴📄 content.json
+
+    └─╴📁 2: {post-id}
+      └─╴📁 media
+        ├─╴📄 profile_photo.jpeg
+        ├─╴📄 cover_photo.jpeg
+        └─╴📄 media_index.json
+      ├─╴📄 meta_data.json
+      └─╴📄 content.json
+    └─╴📁 ..
+    ├─╴📄 index.json
+    └─╴📄 latest_id.json
+```
+
+<!--
 _mkdocstrings_ works by processing special expressions in your Markdown files.
 
 The syntax is as follows:
@@ -41,7 +120,7 @@ and some handlers accept additional keys.
 Check the documentation for your handler of interest in [Handlers](handlers/overview.md).
 
 !!! example "Example with the Python handler"
-=== "docs/my_page.md"
+=== "home/.aws/config"
 ```md # Documentation for `MyClass`
 
         ::: my_package.my_module.MyClass
@@ -79,17 +158,18 @@ Check the documentation for your handler of interest in [Handlers](handlers/over
                 print("C!")
         ```
 
-    === "Result"
-        <h3 id="documentation-for-myclass" style="margin: 0;">Documentation for <code>MyClass</code></h3>
-        <div><div><p>Print print print!</p><div><div>
-        <h4 id="mkdocstrings.my_module.MyClass.method_a">
-        <code class="highlight language-python">
-        method_a<span class="p">(</span><span class="bp">self</span><span class="p">)</span> </code>
-        </h4><div>
-        <p>Print A!</p></div></div><div><h4 id="mkdocstrings.my_module.MyClass.method_b">
-        <code class="highlight language-python">
-        method_b<span class="p">(</span><span class="bp">self</span><span class="p">)</span> </code>
-        </h4><div><p>Print B!</p></div></div></div></div></div>
+=== "Result"
+
+<h3 id="documentation-for-myclass" style="margin: 0;">Documentation for <code>MyClass</code></h3>
+<div><div><p>Print print print!</p><div><div>
+<h4 id="mkdocstrings.my_module.MyClass.method_a">
+<code class="highlight language-python">
+method_a<span class="p">(</span><span class="bp">self</span><span class="p">)</span> </code>
+</h4><div>
+<p>Print A!</p></div></div><div><h4 id="mkdocstrings.my_module.MyClass.method_b">
+<code class="highlight language-python">
+method_b<span class="p">(</span><span class="bp">self</span><span class="p">)</span> </code>
+</h4><div><p>Print B!</p></div></div></div></div></div>
 
 It is also possible to integrate a mkdocstrings identifier into a Markdown header:
 
@@ -326,4 +406,4 @@ For example, it will not tell the Python handler to look for packages in these p
 (the paths are not added to the `PYTHONPATH` variable).
 If you want to tell Python where to look for packages and modules,
 see [Python Handler: Finding modules](https://mkdocstrings.github.io/python/usage/#finding-modules).
-````
+```` -->

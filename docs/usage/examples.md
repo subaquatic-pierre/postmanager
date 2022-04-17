@@ -1,9 +1,9 @@
 On this page you will find various recipes, tips and tricks
-for *mkdocstrings* and more generally Markdown documentation.
+for _mkdocstrings_ and more generally Markdown documentation.
 
 ## Automatic code reference pages
 
-*mkdocstrings* allows to inject documentation for any object
+_mkdocstrings_ allows to inject documentation for any object
 into Markdown pages. But as the project grows, it quickly becomes
 quite tedious to keep the autodoc instructions, or even the dedicated
 Markdown files in sync with all your source files and objects.
@@ -49,13 +49,13 @@ and configure it like so:
 
 ```yaml title="mkdocs.yml"
 plugins:
-- search  # (1)
-- gen-files:
-    scripts:
-    - docs/gen_ref_pages.py  # (2)
-- mkdocstrings:
-    watch:
-    - src/project  # (3)
+  - search # (1)
+  - gen-files:
+      scripts:
+        - docs/gen_ref_pages.py # (2)
+  - mkdocstrings:
+      watch:
+        - src/project # (3)
 ```
 
 1. Don't forget to load the `search` plugin when redefining the `plugins` item.
@@ -95,7 +95,7 @@ for path in sorted(Path("src").rglob("*.py")):  # (1)
 1. Here we recursively list all `.py` files, but you can adapt the code to list
    files with other extensions of course, supporting other languages than Python.
 2. The module path will look like `project/lorem`.
-   It will be used to build the *mkdocstrings* autodoc identifier.
+   It will be used to build the _mkdocstrings_ autodoc identifier.
 3. This is the relative path to the Markdown page.
 4. This is the absolute path to the Markdown page. Here we put all reference pages
    into a `reference` folder.
@@ -117,14 +117,14 @@ navigation:
 
 ```yaml title="mkdocs.yml"
 nav:
-# rest of the navigation...
-- Code Reference:
-  - project:
-    - lorem: reference/project/lorem.md
-    - ipsum: reference/project/ipsum.md
-    - dolor: reference/project/dolor.md
-    - sit: reference/project/sit.md
-    - amet: reference/project/amet.md
+  # rest of the navigation...
+  - Code Reference:
+      - project:
+          - lorem: reference/project/lorem.md
+          - ipsum: reference/project/ipsum.md
+          - dolor: reference/project/dolor.md
+          - sit: reference/project/sit.md
+          - amet: reference/project/amet.md
 # rest of the navigation...
 ```
 
@@ -145,15 +145,15 @@ and configure the plugin in your MkDocs configuration:
 
 ```yaml title="mkdocs.yml" hl_lines="6 7"
 plugins:
-- search
-- gen-files:
-    scripts:
-    - docs/gen_ref_pages.py
-- literate-nav:
-    nav_file: SUMMARY.md
-- mkdocstrings:
-    watch:
-    - src/project
+  - search
+  - gen-files:
+      scripts:
+        - docs/gen_ref_pages.py
+  - literate-nav:
+      nav_file: SUMMARY.md
+  - mkdocstrings:
+      watch:
+        - src/project
 ```
 
 Then, the previous script is updated like so:
@@ -200,9 +200,9 @@ and replace it with a single line!
 
 ```yaml title="mkdocs.yml"
 nav:
-# rest of the navigation...
-# defer to gen-files + literate-nav
-- Code Reference: reference/  # (1)
+  # rest of the navigation...
+  # defer to gen-files + literate-nav
+  - Code Reference: reference/ # (1)
 # rest of the navigation...
 ```
 
@@ -268,24 +268,24 @@ And update your MkDocs configuration to list the plugin:
 
 ```yaml title="mkdocs.yml" hl_lines="8"
 plugins:
-- search
-- gen-files:
-    scripts:
-    - docs/gen_ref_pages.py
-- literate-nav:
-    nav_file: SUMMARY.md
-- section-index
-- mkdocstrings:
-    watch:
-    - src/project
+  - search
+  - gen-files:
+      scripts:
+        - docs/gen_ref_pages.py
+  - literate-nav:
+      nav_file: SUMMARY.md
+  - section-index
+  - mkdocstrings:
+      watch:
+        - src/project
 ```
 
 With this, `__init__` modules will be documented and bound to the sections
 themselves, better reflecting our public API.
 
 !!! important
-    With the new Python handler, don't forget to hide submodules
-    when documenting a module, otherwise they will show up in sections:
+With the new Python handler, don't forget to hide submodules
+when documenting a module, otherwise they will show up in sections:
 
     ```yaml title="mkdocs.yml" hl_lines="8"
     plugins:
@@ -311,21 +311,23 @@ Hello mkdocstrings!
 ````
 
 ```css title="docs/css/code_select.css"
-.highlight .gp, .highlight .go { /* Generic.Prompt, Generic.Output */
-    user-select: none;
+.highlight .gp,
+.highlight .go {
+  /* Generic.Prompt, Generic.Output */
+  user-select: none;
 }
 ```
 
 ```yaml title="mkdocs.yml"
 extra_css:
-- css/code_select.css
+  - css/code_select.css
 ```
 
 !!! warning
-    The `.highlight .gp, .highlight .go` CSS selector can have unintended side-effects.
-    To target `pycon` code blocks more specifically, you can configure the
-    `pymdownx.highlight` extension to use Pygments and set language classes
-    on code blocks:
+The `.highlight .gp, .highlight .go` CSS selector can have unintended side-effects.
+To target `pycon` code blocks more specifically, you can configure the
+`pymdownx.highlight` extension to use Pygments and set language classes
+on code blocks:
 
     ```yaml title="mkdocs.yml"
     markdown_extensions:
@@ -348,16 +350,18 @@ with more accurate CSS selectors:
 
 ```html
 <style>
-#my-div .highlight .gp, #my-div .highlight .go { /* Generic.Prompt, Generic.Output */
+  #my-div .highlight .gp,
+  #my-div .highlight .go {
+    /* Generic.Prompt, Generic.Output */
     user-select: none;
-}
+  }
 </style>
 ```
 
 Try to select the following code block's text:
 
 <style>
-.highlight .gp, .highlight .go { /* Generic.Prompt, Generic.Output */
+.highlight .gp, .highlight .go { /*Generic.Prompt, Generic.Output*/
     user-select: none;
 }
 </style>

@@ -11,10 +11,8 @@ nav:
       - Changelog: changelog.md
 
   - Usage:
-      - Overview: usage/index.md
-      - Theming: usage/theming.md
-      - Recipes: usage/recipes.md
-      - Troubleshooting: usage/troubleshooting.md
+      - Configuration: usage/index.md
+      - Examples: usage/examples.md
 
   - Code Reference:
       - PostManager: code/manager.md
