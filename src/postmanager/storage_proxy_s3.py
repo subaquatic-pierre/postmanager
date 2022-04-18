@@ -152,5 +152,5 @@ class StorageProxyS3(StorageProxy):
         """Ensure root directory ends with '/'."""
         try:
             assert self.root_dir.endswith("/")
-        except:
+        except Exception:
             self.root_dir = f"{self.root_dir}/"

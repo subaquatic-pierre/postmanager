@@ -92,7 +92,7 @@ class MediaData(StorageAdapter):
         try:
             del self._unsaved_media[media_name]
             return None
-        except:
+        except Exception:
             return "Image does not exist"
 
     def delete_media(self, media_name) -> None:
@@ -214,7 +214,7 @@ class MediaData(StorageAdapter):
 
     def _init_media_index(self):
         try:
-            data = self.get_json(f"media_index.json")
+            data = self.get_json("media_index.json")
             self.media_index = data
 
         except StorageProxyException:

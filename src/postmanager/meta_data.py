@@ -112,7 +112,8 @@ class MetaData(StorageAdapter):
             MetaData: New MetaData object created
 
         """
-        assert meta_dict.get("id") != None, "meta_dict object must contain an ID key"
+        if meta_dict.get("id") is None:
+            raise Exception("meta_dict object must contain an ID key")
 
         post_meta = MetaData(storage_proxy, meta_dict.get("id"), meta_dict)
 

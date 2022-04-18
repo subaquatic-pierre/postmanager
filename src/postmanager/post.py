@@ -171,7 +171,7 @@ class Post(StorageAdapter):
             return content
 
         try:
-            data = self.get_json(f"content.json")
+            data = self.get_json("content.json")
             return data
 
         except StorageProxyException:
