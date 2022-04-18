@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Any
 from unittest.mock import MagicMock
 from postmanager.meta_data import MetaData
 from postmanager.post import Post
@@ -33,7 +33,7 @@ class PostManager(StorageAdapter):
         obj_json = self.get_json("index.json")
         return obj_json
 
-    def update_index(self, new_index: List) -> None:
+    def update_index(self, new_index: List[Any]) -> None:
         """Writes new index to storage.
 
         Args:
@@ -86,9 +86,10 @@ class PostManager(StorageAdapter):
         """
         meta = [blog_meta for blog_meta in self.index if blog_meta["title"] == title]
         self._verify_meta(meta, "No blog with that title found")
-        return meta[0]["id"]
+        meta_data_id: int = meta[0]["id"]
+        return meta_data_id
 
-    def get_post_content(self, post_id: int) -> dict:
+    def get_post_content(self, post_id: int) -> dict[str, str]:
         """Get content of post with given id.
 
         Args:
@@ -112,13 +113,13 @@ class PostManager(StorageAdapter):
 
         """
         latest_id_json = self.get_json("latest_id.json")
-        latest_id = latest_id_json.get("latest_id")
-        new_id = latest_id + 1
+        latest_id: int = int(latest_id_json.get("latest_id", 0))
+        new_id: int = latest_id + 1
 
-        self.save_json({"latest_id": new_id}, "latest_id.json")
+        self.save_json({"latest_id": str(new_id)}, "latest_id.json")
         return latest_id
 
-    def new_meta_data(self, meta_dict: dict) -> MetaData:
+    def new_meta_data(self, meta_dict: dict[str, str]) -> MetaData:
         """Create new MetaData object.
 
         Args:
@@ -136,10 +137,10 @@ class PostManager(StorageAdapter):
             meta_dict["id"] = new_id
 
         new_storage_proxy = self.new_storage_proxy(f"{meta_dict['id']}/")
-        new_meta_data = MetaData.from_json(new_storage_proxy, meta_dict)
+        new_meta_data: MetaData = MetaData.from_json(new_storage_proxy, meta_dict)
         return new_meta_data
 
-    def new_post(self, post_meta: dict, content="") -> Post:
+    def new_post(self, post_meta: dict[str, str], content="") -> Post:
         """Create new Post object.
 
         Args:
@@ -213,7 +214,7 @@ class PostManager(StorageAdapter):
             self.storage_proxy.delete_directory(post.root_dir)
 
         else:
-            all_post_files = post.list_files()
+            all_post_files: List[str] = post.list_files()
             file_keys = [
                 filename.replace(
                     post.root_dir,
@@ -242,7 +243,7 @@ class PostManager(StorageAdapter):
         """
         for index_meta in self.index:
             new_proxy = self.new_storage_proxy(f"{post_id}/")
-            meta = MetaData.from_json(new_proxy, index_meta)
+            meta: MetaData = MetaData.from_json(new_proxy, index_meta)
             if meta.id == int(post_id):
                 return meta
 
@@ -251,7 +252,7 @@ class PostManager(StorageAdapter):
     # Private methods
     # -----
 
-    def _build_meta_data(self, meta_dict: dict):
+    def _build_meta_data(self, meta_dict: dict[str, str]):
         storage_proxy = self.new_storage_proxy(f"{meta_dict['id']}/")
         post_meta_data = MetaData.from_json(storage_proxy, meta_dict)
         return post_meta_data
@@ -277,7 +278,9 @@ class PostManager(StorageAdapter):
         except StorageProxyException:
             self.save_json({"latest_id": 0}, "latest_id.json")
 
-    def _verify_meta(self, meta_data_list: List[dict], error_message=""):
+    def _verify_meta(
+        self, meta_data_list: List[dict[str, str]], error_message=""
+    ) -> None:
         if len(meta_data_list) > 1:
             raise PostManagerException("More than one blog with that ID found")
         elif len(meta_data_list) == 0:

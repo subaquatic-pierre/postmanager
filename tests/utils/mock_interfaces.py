@@ -23,7 +23,7 @@ class MockStorageInterface(StorageInterface):
 
 class MockStorageProxyInterface(StorageProxy):
     def __init__(self, client) -> None:
-        super().__init__(client)
+        super().__init__("root_dir", client)
 
     def get_json(self, filename: str):
         pass

@@ -1,3 +1,4 @@
+from typing import List
 from postmanager.interfaces import StorageProxy
 from postmanager.storage_adapter import StorageAdapter
 
@@ -20,10 +21,10 @@ class MetaData(StorageAdapter):
         super().__init__(storage_proxy)
 
         self.id = id
-        self._attrs_list = []
+        self._attrs_list: List[str] = []
         self._init_attrs(attrs)
 
-    def to_json(self):
+    def to_json(self) -> dict[str, str]:
         """Get JSON representation of the meta data.
 
         Returns:
@@ -37,7 +38,7 @@ class MetaData(StorageAdapter):
 
         return data
 
-    def save(self):
+    def save(self) -> None:
         """Save the meta data to disk.
 
         Returns:
@@ -46,7 +47,7 @@ class MetaData(StorageAdapter):
         """
         self.save_json(self.to_json(), "meta_data.json")
 
-    def update(self, meta_dict: dict):
+    def update(self, meta_dict: dict[str, str]) -> None:
         """Update meta data.
 
         Args:
@@ -68,7 +69,7 @@ class MetaData(StorageAdapter):
     # Private methods
     # -----
 
-    def _update_attrs_list(self, meta_dict) -> None:
+    def _update_attrs_list(self, meta_dict: dict[str, str]) -> None:
         """Update attribute list.
 
         Args:
@@ -82,7 +83,7 @@ class MetaData(StorageAdapter):
             if key not in self._attrs_list:
                 self._attrs_list.append(key)
 
-    def _init_attrs(self, meta_dict) -> None:
+    def _init_attrs(self, meta_dict: dict[str, str]) -> None:
         """Initialize attributes, assign each key in meta_dict to attribute on MetaData object.
 
         Args:
@@ -101,7 +102,7 @@ class MetaData(StorageAdapter):
                 setattr(self, key, value)
 
     @staticmethod
-    def from_json(storage_proxy, meta_dict: dict):
+    def from_json(storage_proxy, meta_dict: dict[str, str]):
         """Build new MetaData object from JSON object.
 
         Args:

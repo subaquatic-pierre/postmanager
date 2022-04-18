@@ -4,11 +4,11 @@ from abc import ABC, abstractmethod
 
 class StorageInterface(ABC):
     @abstractmethod
-    def get_json(self, filename: str) -> dict:
+    def get_json(self, filename: str) -> dict[str, str]:
         pass
 
     @abstractmethod
-    def save_json(self, body: dict, filename: str) -> None:
+    def save_json(self, body: dict[str, str], filename: str) -> None:
         pass
 
     @abstractmethod
@@ -24,5 +24,5 @@ class StorageInterface(ABC):
         pass
 
     @abstractmethod
-    def list_files(self) -> List[dict]:
+    def list_files(self) -> List[str]:
         pass
