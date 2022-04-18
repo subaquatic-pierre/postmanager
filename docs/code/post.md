@@ -1,0 +1,3 @@
+# Post
+
+## ::: postmanager.post

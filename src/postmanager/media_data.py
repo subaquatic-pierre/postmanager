@@ -1,11 +1,22 @@
-from postmanager.interfaces import StorageInterface, StorageProxy
+from postmanager.interfaces import StorageProxy
 from postmanager.storage_adapter import StorageAdapter
 from postmanager.exception import StorageProxyException
 from base64 import b64decode, b64encode
 
 
 class MediaData(StorageAdapter):
+    """Main MediaData class used to manage all media data associated with a post.
+
+    Attributes:
+        storage_proxy (StorageProxy): Storage proxy used to communicate with storage backend.
+    """
+
     def __init__(self, storage_proxy: StorageProxy) -> None:
+        """
+        Args:
+            storage_proxy (StorageProxy): Storage proxy used
+             to communicate with storage system.
+        """
         super().__init__(storage_proxy)
 
         self._unsaved_media = {}
@@ -14,7 +25,13 @@ class MediaData(StorageAdapter):
 
         self._init_media_index()
 
-    def save(self):
+    def save(self) -> None:
+        """Save all unsaved data to disk.
+
+        Returns:
+            None: Nothing returned
+
+        """
         updated = False
         # Save unsaved images
         if self._unsaved_media:
@@ -31,7 +48,19 @@ class MediaData(StorageAdapter):
 
     def add_media(
         self, media_data, media_name, media_data_format="data_url", overwrite=True
-    ):
+    ) -> None:
+        """Add media to be saved.
+
+        Args:
+            media_data (str):  Byte64 encoded string in DataURL format.
+            media_name (str): Name of media used to reference media bytes stored.
+            media_data_format (str,optional): Media format being passed to method.
+            overwrite (bool, optional): OVerwrite existing media data with same name.
+
+        Returns:
+            None: Nothing returned
+
+        """
         # TODO: Check if media data format is data_url
         # Handle none data_url media format
 
@@ -49,16 +78,45 @@ class MediaData(StorageAdapter):
             "file_type": file_type,
         }
 
-    def remove_media(self, media_name):
+    def remove_media(self, media_name) -> None:
+        """Remove media that has not yet been saved to disk.
+
+        Args:
+            media_name (str): Name of media data to remove.
+
+        Returns:
+            None: Nothing returned
+
+        """
         try:
             del self._unsaved_media[media_name]
         except:
             return "Image does not exist"
 
-    def delete_media(self, media_name):
+    def delete_media(self, media_name) -> None:
+        """Delete media that is stored on disk.
+
+        Args:
+            media_name (str): Name of media data to be deleted.
+
+        Returns:
+            None: Nothing returned
+
+        """
         self._undeleted_media.append(media_name)
 
-    def get_media(self, media_name, return_format="data_url"):
+    def get_media(self, media_name, return_format="data_url") -> str:
+        """Get bytes for media data.
+
+        Args:
+            media_name (str): Name of media data to be retrieved.
+            media_data_format (str,optional): Media format to be returned.
+
+
+        Returns:
+            str: byte64 encoded str in DataURL format.
+
+        """
         try:
             media_data = self.media_index[media_name]
             filename = media_data["filename"]
