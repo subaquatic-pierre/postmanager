@@ -3,14 +3,15 @@ from unittest.mock import MagicMock
 
 from postmanager.post import Post
 from postmanager.meta_data import MetaData
-from postmanager.manager import PostManager
 from postmanager.storage_proxy_s3 import StorageProxyS3
 from postmanager.storage_proxy_local import StorageProxyLocal
 from postmanager.storage_adapter import StorageAdapter
 from postmanager.media_data import MediaData
+from unittest.mock import MagicMock
+from postmanager.manager import PostManager
 
 # -----
-# Manager
+# MetaData
 # -----
 
 
@@ -18,11 +19,6 @@ def setup_manager():
     storage_proxy = MagicMock()
     post_manager = PostManager(storage_proxy)
     return post_manager
-
-
-# -----
-# MetaData
-# -----
 
 
 def setup_mock_meta(post_id, meta_dict):
