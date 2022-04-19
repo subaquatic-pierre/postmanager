@@ -42,7 +42,7 @@ jobs:
         shell: bash -l {0}
         run: python -m pytest
 
-      - name: Upload coverage to Codecov
+      - name: Upload coverage to Codecov, CHANGE
         uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
