@@ -1,6 +1,6 @@
 # PostManager
 
-![Tests](https://github.com/subaquatic-pierre/postmanager/actions/workflows/tests.yml/badge.svg)
+![tests](https://github.com/subaquatic-pierre/postmanager/actions/workflows/tests.yaml/badge.svg)
 
 A simple post manager for managing posts hosted on AWS S3 bucket.
 
