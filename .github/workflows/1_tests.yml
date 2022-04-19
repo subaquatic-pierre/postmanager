@@ -45,4 +45,4 @@ jobs:
           pip install -e .
 
       - name: Run Pytest
-        run: python -m pytest discover
+        run: python -m pytest
