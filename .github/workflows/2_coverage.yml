@@ -1,4 +1,4 @@
-name: Tests
+name: CodeCoverage
 
 on:
   push:
@@ -14,7 +14,7 @@ on:
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: True
-
+  
 jobs:
   codecoverage:
     runs-on: ${{ matrix.os }}
