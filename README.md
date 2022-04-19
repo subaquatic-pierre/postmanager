@@ -1,5 +1,6 @@
 # PostManager
 
+[![PyPI](https://img.shields.io/pypi/v/postmanager.svg)](https://pypi.python.org/pypi/postmanager)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](https://github.com/subaquatic-pierre/postmanager/blob/main/LICENSE)
 [![Tests](https://github.com/subaquatic-pierre/postmanager/workflows/Tests/badge.svg)](https://github.com/subaquatic-pierre/postmanager/actions/workflows/1_tests.yml)
 [![Linting](https://github.com/subaquatic-pierre/postmanager/workflows/Linting/badge.svg)](https://github.com/subaquatic-pierre/postmanager/actions/workflows/3_linting.yml)
