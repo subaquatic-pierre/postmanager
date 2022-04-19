@@ -6,6 +6,7 @@ omit =
     */python?.?/*
     */site-packages/nose/*
     */http.py
+    
 exclude_lines =
     @numba.jit
     @jit

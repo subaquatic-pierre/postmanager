@@ -33,12 +33,14 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
+          python -m pip install -r requirements_dev.txt
+          python -m pip install -r requirements.txt
           pip install tox tox-gh-actions
 
       - name: Test with tox
         run: tox
 
-      - name: Generate CodeCoverage XML
+      - name: Run CodeCoverage
         run: coverage xml
 
       - name: Upload coverage to Codecov, CHANGE
