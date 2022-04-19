@@ -1,4 +1,5 @@
 [run]
+command_line = -m pytest
 source = src/
 
 [report]

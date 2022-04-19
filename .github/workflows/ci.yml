@@ -45,7 +45,7 @@ jobs:
 
       - name: Run CodeCoverage
         run: |
-          coverage run -m pytest
+          coverage run 
           coverage xml
 
       - name: Upload coverage to Codecov, CHANGE
