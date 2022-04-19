@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: True
 
 jobs:
-  test:
+  codecoverage:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
