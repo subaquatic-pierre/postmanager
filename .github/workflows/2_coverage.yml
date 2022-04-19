@@ -10,8 +10,6 @@ on:
       - main
       - dev
 
-
-
 jobs:
   coverage:
     runs-on: ${{ matrix.os }}
@@ -19,11 +17,6 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         python-version: ["3.9"]
-        # include:
-        #   - os: windows-latest
-        #     python-version: "3.7"
-        #   - os: macos-latest
-        #     python-version: "3.7"
 
         steps:
     - name: Check out code repository
@@ -43,7 +36,7 @@ jobs:
 
     - name: Generate coverage report
       run: |
-        coverage run -m pytest
+        coverage run
         coverage xml
 
     - name: Upload coverage to Codecov
