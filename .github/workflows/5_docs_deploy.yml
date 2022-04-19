@@ -3,7 +3,7 @@ name: Deploy docs to GitHub Pages
 on:
   push:
     branches:
-      - dev
+      - main
 
   workflow_dispatch:
 
@@ -39,7 +39,7 @@ jobs:
         run: |
           mkdocs build
 
-      - name: Deploy CHANGE
+      - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
