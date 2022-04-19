@@ -1,4 +1,4 @@
-name: Formatting
+name: Linting
 
 on:
   push:
@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  linting:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
