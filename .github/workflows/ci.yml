@@ -20,7 +20,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, "windows-latest"]
-        python-version: ["3.7", "3.8", "3.9"]
+        python-version: ["3.9"]
 
     steps:
       - uses: actions/checkout@v2
@@ -36,10 +36,12 @@ jobs:
           python -m pip install -r requirements_dev.txt
           python -m pip install -r requirements.txt
           python -m pip install -e .
-          pip install tox tox-gh-actions
 
-      - name: Test with tox
-        run: tox
+      - name: Run MyPy
+        run: mypy src
+
+      - name: Run Flake8
+        run: flake8 src
 
       - name: Run CodeCoverage
         run: |
