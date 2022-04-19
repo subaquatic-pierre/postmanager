@@ -18,8 +18,7 @@ class PostManager(StorageAdapter):
     def __init__(self, storage_proxy: StorageProxy) -> None:
         """
         Args:
-            storage_proxy (StorageProxy): Storage proxy used
-             to communicate with storage system.
+            storage_proxy (StorageProxy): Storage proxy used to communicate with storage system.
         """
 
         super().__init__(storage_proxy)
