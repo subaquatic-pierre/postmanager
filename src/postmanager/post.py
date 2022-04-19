@@ -1,4 +1,5 @@
 import json
+from typing import Any
 
 from postmanager.media_data import MediaData
 from postmanager.interfaces import StorageProxy
@@ -39,7 +40,7 @@ class Post(StorageAdapter):
         self.media_data = self._init_media_data()
         self.content = self._init_content(content)
 
-    def to_json(self) -> dict:
+    def to_json(self) -> dict[str, Any]:
         """Get JSON representation of the post.
 
         Returns:
@@ -56,7 +57,7 @@ class Post(StorageAdapter):
     # Update methods
     # -----
 
-    def update_meta_data(self, meta_dict: dict) -> None:
+    def update_meta_data(self, meta_dict: dict[str, str]) -> None:
         """Update meta data associated with the post.
 
         Args:
@@ -68,7 +69,7 @@ class Post(StorageAdapter):
         """
         self.meta_data.update(meta_dict)
 
-    def update_content(self, content: dict) -> None:
+    def update_content(self, content: dict[str, str]) -> None:
         """Update content associated with the post.
 
         Args:
@@ -153,7 +154,8 @@ class Post(StorageAdapter):
             str: byte64 encoded str in DataURL format.
 
         """
-        return self.media_data.get_media(media_name, **kwargs)
+        data: str = self.media_data.get_media(media_name, **kwargs)
+        return data
 
     # -----
     # Private methods
@@ -169,7 +171,7 @@ class Post(StorageAdapter):
             return content
 
         try:
-            data = self.get_json(f"content.json")
+            data = self.get_json("content.json")
             return data
 
         except StorageProxyException:

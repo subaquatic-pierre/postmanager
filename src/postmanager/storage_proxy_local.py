@@ -2,7 +2,8 @@ import json
 import os
 import shutil
 
-from typing import List
+from os import PathLike
+from typing import List, Union
 from pathlib import Path
 
 from postmanager.exception import StorageProxyException
@@ -17,18 +18,18 @@ class StorageProxyLocal(StorageProxy):
         client (StorageProxy): Client communicating with storage, ie. Path.
     """
 
-    def __init__(self, root_dir: str, client, config={}) -> None:
+    def __init__(self, root_dir: str, client, config: dict[str, str] = {}) -> None:
         """
         Args:
             root_dir (str): Root directory to read and write objects to.
             client (StorageProxy): Client communicating with storage, ie. Path.
             config (dict, optional): Dict object defining configuration for proxy.
         """
-        super().__init__(client)
         self.config = config
-        self.root_dir = self._init_root_dir(root_dir)
+        configured_root = self._init_root_dir(root_dir)
+        super().__init__(configured_root, client)
 
-    def get_json(self, filename: str) -> dict:
+    def get_json(self, filename: str) -> dict[str, str]:
         """
         Fetch JSON data from storage.
 
@@ -40,13 +41,13 @@ class StorageProxyLocal(StorageProxy):
         """
         try:
             file = self.client(self.root_dir, filename)
-            object_json = json.loads(file.read_text())
+            object_json: dict[str, str] = json.loads(file.read_text())
 
             return object_json
         except Exception as e:
             raise StorageProxyException(f"Error fething JSON from directory. {str(e)}")
 
-    def save_json(self, body: dict, filename: str) -> None:
+    def save_json(self, body: dict[str, str], filename: str) -> None:
         """
         Save JSON data to storage.
 
@@ -94,9 +95,9 @@ class StorageProxyLocal(StorageProxy):
         """
         try:
             file = self.client(self.root_dir, filename)
-            bytes = file.read_bytes()
+            file_bytes: bytes = file.read_bytes()
 
-            return bytes
+            return file_bytes
 
         except Exception as e:
             raise StorageProxyException(f"Error getting bytes from directory. {str(e)}")
@@ -130,7 +131,7 @@ class StorageProxyLocal(StorageProxy):
         """
         shutil.rmtree(directory, ignore_errors=True)
 
-    def list_files(self) -> List[dict]:
+    def list_files(self) -> List[str]:
         """
         List all files in directory.
 
@@ -163,7 +164,7 @@ class StorageProxyLocal(StorageProxy):
         Returns:
             str: Configured root directory.
         """
-        config_home_dir = self.config.get("home_dir", False)
+        config_home_dir: Union[str, PathLike[str]] = self.config.get("home_dir", "")
         sys_home_dir = Path.home()
 
         if config_home_dir:

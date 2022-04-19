@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Any
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -35,9 +35,10 @@ class StorageAdapter(StorageInterface):
         """
         Root directory to read and write objects to.
         """
-        return self.storage_proxy.root_dir
+        root_dir: str = self.storage_proxy.root_dir
+        return root_dir
 
-    def save_json(self, body: dict, filename: str) -> None:
+    def save_json(self, body: Any, filename: str) -> None:
         """
         Save JSON data to storage.
 
@@ -50,7 +51,7 @@ class StorageAdapter(StorageInterface):
         """
         self.storage_proxy.save_json(body, filename)
 
-    def get_json(self, filename) -> dict:
+    def get_json(self, filename: str) -> dict[str, str]:
         """
         Fetch JSON data from storage.
 
@@ -87,7 +88,7 @@ class StorageAdapter(StorageInterface):
         """
         return self.storage_proxy.get_bytes(filename)
 
-    def list_files(self) -> List[dict]:
+    def list_files(self) -> List[str]:
         """
         List all files in directory.
 
@@ -96,7 +97,7 @@ class StorageAdapter(StorageInterface):
         """
         return self.storage_proxy.list_files()
 
-    def delete_file(self, filename) -> None:
+    def delete_file(self, filename: str) -> None:
         """
         Remove file from storage.
 
@@ -108,7 +109,7 @@ class StorageAdapter(StorageInterface):
         """
         self.storage_proxy.delete_file(filename)
 
-    def _build_new_root(self, new_root):
+    def _build_new_root(self, new_root: str):
         """
         Build new root string for new storage proxy.
 

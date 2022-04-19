@@ -1,3 +1,4 @@
+from typing import List, Union, Any
 from postmanager.interfaces import StorageProxy
 from postmanager.storage_adapter import StorageAdapter
 from postmanager.exception import StorageProxyException
@@ -19,9 +20,9 @@ class MediaData(StorageAdapter):
         """
         super().__init__(storage_proxy)
 
-        self._unsaved_media = {}
-        self._undeleted_media = []
-        self.media_index = {}
+        self._unsaved_media: dict[str, Any] = {}
+        self._undeleted_media: List[str] = []
+        self.media_index: dict[str, Any] = {}
 
         self._init_media_index()
 
@@ -78,7 +79,7 @@ class MediaData(StorageAdapter):
             "file_type": file_type,
         }
 
-    def remove_media(self, media_name) -> None:
+    def remove_media(self, media_name) -> Union[None, str]:
         """Remove media that has not yet been saved to disk.
 
         Args:
@@ -90,7 +91,8 @@ class MediaData(StorageAdapter):
         """
         try:
             del self._unsaved_media[media_name]
-        except:
+            return None
+        except Exception:
             return "Image does not exist"
 
     def delete_media(self, media_name) -> None:
@@ -105,7 +107,7 @@ class MediaData(StorageAdapter):
         """
         self._undeleted_media.append(media_name)
 
-    def get_media(self, media_name, return_format="data_url") -> str:
+    def get_media(self, media_name, return_format="data_url") -> Union[str, bytes]:
         """Get bytes for media data.
 
         Args:
@@ -180,16 +182,17 @@ class MediaData(StorageAdapter):
             filename = f"{media_name}.{file_ext}"
 
             # Save media
-            self.save_bytes(media_data["bytes"], filename)
+            media_bytes: bytes = media_data["bytes"]
+            self.save_bytes(media_bytes, filename)
 
             # Remove bytes from media_data
-            del media_data["bytes"]
-
-            # Add filename to media_data
-            media_data["filename"] = filename
+            new_media_data: dict[str, str] = {
+                "file_type": media_data["file_type"],
+                "filename": filename,
+            }
 
             # Update media index with new media_data
-            self.media_index[media_name] = media_data
+            self.media_index[media_name] = new_media_data
 
         # Reset unsaved media
         self._unsaved_media = {}
@@ -211,7 +214,7 @@ class MediaData(StorageAdapter):
 
     def _init_media_index(self):
         try:
-            data = self.get_json(f"media_index.json")
+            data = self.get_json("media_index.json")
             self.media_index = data
 
         except StorageProxyException:

@@ -14,21 +14,19 @@ class StorageProxyS3(StorageProxy):
         client (StorageProxy): Client communicating with storage, ie. Path.
     """
 
-    def __init__(self, bucket_name, root_dir, client) -> None:
+    def __init__(self, bucket_name: str, root_dir: str, client) -> None:
         """
         Args:
             bucket_name (str): Name of bucket on AWS.
             root_dir (str): Root directory to read and write objects to.
             client (StorageProxy): Client communicating with storage, ie. Path.
         """
-        super().__init__(client)
-
-        self.root_dir = root_dir
         self.bucket_name = bucket_name
+        super().__init__(root_dir, client)
 
         self._verify_root_dir()
 
-    def get_json(self, filename):
+    def get_json(self, filename: str):
         """
         Fetch JSON data from storage.
 
@@ -43,13 +41,13 @@ class StorageProxyS3(StorageProxy):
                 Bucket=self.bucket_name, Key=f"{self.root_dir}{filename}"
             )
 
-            object_json = json.loads(object["Body"].read())
+            object_json: dict[str, str] = json.loads(object["Body"].read())
             return object_json
 
         except Exception as e:
             raise StorageProxyException(f"Error fething JSON from bucket. {str(e)}")
 
-    def save_json(self, body: dict, filename: str):
+    def save_json(self, body: dict[str, str], filename: str) -> None:
         """
         Save JSON data to storage.
 
@@ -106,7 +104,7 @@ class StorageProxyS3(StorageProxy):
                 Bucket=self.bucket_name, Key=f"{self.root_dir}{filename}"
             )
 
-            object_bytes = object["Body"].read()
+            object_bytes: bytes = object["Body"].read()
             return object_bytes
 
         except Exception as e:
@@ -130,7 +128,9 @@ class StorageProxyS3(StorageProxy):
         except Exception as e:
             raise StorageProxyException(f"Error deleting object from bucket. {str(e)}")
 
-    def list_files(self) -> List[dict]:
+    def list_files(
+        self,
+    ) -> List[str]:
         """
         List all files in directory.
 
@@ -152,5 +152,5 @@ class StorageProxyS3(StorageProxy):
         """Ensure root directory ends with '/'."""
         try:
             assert self.root_dir.endswith("/")
-        except:
+        except Exception:
             self.root_dir = f"{self.root_dir}/"
