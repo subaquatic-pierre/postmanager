@@ -1,4 +1,4 @@
-name: Code Coverage
+name: Tests
 
 on:
   push:
@@ -9,25 +9,33 @@ on:
     branches:
       - main
       - dev
+  workflow_dispatch:
 
-# Fixed the YAML error
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: True
 
 jobs:
-  coverage:
+  test:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest]
         python-version: ["3.9"]
+        # include:
+        #   - os: windows-latest
+        #     python-version: "3.7"
+        #   - os: macos-latest
+        #     python-version: "3.7"
 
-        steps:
-    - name: Check out code repository
-      uses: actions/checkout@v2
+    steps:
+      - name: Check out code repository
+        uses: actions/checkout@v2
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
 
     - name: Install dependencies and package
       run: |
