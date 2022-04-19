@@ -39,9 +39,11 @@ jobs:
         run: |
           mkdocs build
 
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
-        if: ${{ github.ref == 'refs/heads/main' }}
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./site
+      - name: Deploy docs
+        uses: mhausenblas/mkdocs-deploy-gh-pages@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CONFIG_FILE: ./mkdocs.yml
+          EXTRA_PACKAGES: build-base
+          # GITHUB_DOMAIN: github.myenterprise.com
+          REQUIREMENTS: ./requirements_docs.txt
