@@ -1,0 +1,12 @@
+[run]
+relative_files = True
+
+[report]
+omit =
+    */python?.?/*
+    */site-packages/nose/*
+    */http.py
+exclude_lines =
+    @numba.jit
+    @jit
+    pragma: no cover
