@@ -1,4 +1,4 @@
-name: CI
+name: Linting
 
 on:
   push:
@@ -9,17 +9,14 @@ on:
     branches:
       - main
       - dev
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: True
+  workflow_dispatch:
 
 jobs:
-  test:
+  linting:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, "windows-latest"]
+        os: [ubuntu-latest]
         python-version: ["3.9"]
 
     steps:
@@ -45,18 +42,5 @@ jobs:
 
       - name: Run CodeCoverage
         run: |
-          coverage run -m pytest
+          coverage run 
           coverage xml
-
-      - name: Upload coverage to Codecov, CHANGE
-        uses: codecov/codecov-action@v1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage.xml
-          directory: ./coverage/reports/
-          flags: unittests
-          env_vars: OS,PYTHON
-          name: codecov-umbrella
-          fail_ci_if_error: true
-          path_to_write_report: ./coverage/codecov_report.txt
-          verbose: true
