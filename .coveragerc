@@ -1,4 +1,5 @@
 [run]
+source = postmanager
 relative_files = True
 
 [report]
