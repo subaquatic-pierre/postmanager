@@ -41,7 +41,9 @@ jobs:
         run: tox
 
       - name: Run CodeCoverage
-        run: coverage xml
+        run: |
+        coverage run -m pytest 
+        coverage xml
 
       - name: Upload coverage to Codecov, CHANGE
         uses: codecov/codecov-action@v1
