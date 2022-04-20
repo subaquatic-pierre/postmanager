@@ -5,8 +5,6 @@ Every little bit helps, and credit will always be given.
 
 ## Environment setup
 
-Nothing easier!
-
 Fork and clone the repository, then:
 
 ```bash
