@@ -467,6 +467,26 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#file-storage-structure" class="md-nav__link">
+    File storage structure
+  </a>
+  
+    <nav class="md-nav" aria-label="File storage structure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#set-template-name" class="md-nav__link">
+    Set Template name
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#local-storage" class="md-nav__link">
     Local Storage
   </a>
@@ -497,13 +517,6 @@
         
       </ul>
     </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#file-storage-structure" class="md-nav__link">
-    File storage structure
-  </a>
   
 </li>
       
@@ -710,6 +723,26 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#file-storage-structure" class="md-nav__link">
+    File storage structure
+  </a>
+  
+    <nav class="md-nav" aria-label="File storage structure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#set-template-name" class="md-nav__link">
+    Set Template name
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#local-storage" class="md-nav__link">
     Local Storage
   </a>
@@ -743,13 +776,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#file-storage-structure" class="md-nav__link">
-    File storage structure
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -765,6 +791,44 @@
 
 
 <h1 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">«</a></h1>
+<h2 id="file-storage-structure">File storage structure<a class="headerlink" href="#file-storage-structure" title="Permanent link">«</a></h2>
+<p>Below is an example of default storage locations, if you do not want to change it you will not need to make any configuration changes. The home directory differs depending on storage type, whether it is S3 storage or local storage, below is an explanation of the difference:</p>
+<div class="admonition note">
+<p class="admonition-title">Home directory difference</p>
+</div>
+<ul>
+<li>Mac/Linux: <code>/home/{user}/.postmanager/data</code></li>
+<li>Windows: <code>C:\Users\{user}\.postmanager\data</code></li>
+<li>AWS: <code>{bucket-name}</code></li>
+</ul>
+<h3 id="set-template-name">Set Template name<a class="headerlink" href="#set-template-name" title="Permanent link">«</a></h3>
+<div class="highlight"><pre><span></span><code>employee_manager = PostManager.setup_local(&quot;employees&quot;)
+</code></pre></div>
+<p>This will set the directory in which the data is stored as follows</p>
+<div class="highlight"><pre><span></span><code>  home/employees/1/....
+  home/employees/2/....
+</code></pre></div>
+<p>By defualt the template name is <code>post</code>, with the following file structure.</p>
+<div class="highlight"><pre><span></span><code>📁 {home}
+└─╴📁 post: {template-name}
+    └─╴📁 1: {post-id}
+      └─╴📁 media
+        ├─╴📄 cover_photo.jpeg
+        └─╴📄 media_index.json
+      ├─╴📄 meta_data.json
+      └─╴📄 content.json
+
+    └─╴📁 2: {post-id}
+      └─╴📁 media
+        ├─╴📄 profile_photo.jpeg
+        ├─╴📄 cover_photo.jpeg
+        └─╴📄 media_index.json
+      ├─╴📄 meta_data.json
+      └─╴📄 content.json
+    └─╴📁 ..
+    ├─╴📄 index.json
+    └─╴📄 latest_id.json
+</code></pre></div>
 <h2 id="local-storage">Local Storage<a class="headerlink" href="#local-storage" title="Permanent link">«</a></h2>
 <p>No credentials are need to use local storage. If you choose local storage as the setup method for PostManager it is only required that the user have permission to read and write to the home directory, which is by default true.</p>
 <h2 id="aws-s3-storage">AWS S3 Storage<a class="headerlink" href="#aws-s3-storage" title="Permanent link">«</a></h2>
@@ -796,36 +860,6 @@ AWS Access Key ID [None]: AKIAIOSFODNN7EXAMPLE
 AWS Secret Access Key [None]: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 Default region name [None]: us-west-2
 Default output format [None]: json
-</code></pre></div>
-<h2 id="file-storage-structure">File storage structure<a class="headerlink" href="#file-storage-structure" title="Permanent link">«</a></h2>
-<p>Below is an example of default storage locations, if you do not want to change it you will not need to make any configuration changes. The home directory differs depending on storage type, whether it is S3 storage or local storage, below is an explanation of the difference:</p>
-<div class="admonition note">
-<p class="admonition-title">Home directory difference</p>
-</div>
-<ul>
-<li>Mac/Linux: <code>/home/{user}/.postmanager/data</code></li>
-<li>Windows: <code>C:\Users\{user}\.postmanager\data</code></li>
-<li>AWS: <code>{bucket-name}</code></li>
-</ul>
-<div class="highlight"><pre><span></span><code>📁 {home}
-└─╴📁 post: {template}
-    └─╴📁 1: {post-id}
-      └─╴📁 media
-        ├─╴📄 cover_photo.jpeg
-        └─╴📄 media_index.json
-      ├─╴📄 meta_data.json
-      └─╴📄 content.json
-
-    └─╴📁 2: {post-id}
-      └─╴📁 media
-        ├─╴📄 profile_photo.jpeg
-        ├─╴📄 cover_photo.jpeg
-        └─╴📄 media_index.json
-      ├─╴📄 meta_data.json
-      └─╴📄 content.json
-    └─╴📁 ..
-    ├─╴📄 index.json
-    └─╴📄 latest_id.json
 </code></pre></div>
 
               
