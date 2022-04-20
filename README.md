@@ -19,7 +19,7 @@ Content manager for all types of content, blog posts, galleries, personal record
 
 - Local storage: Store all your content on your local system, skip cloud vulnerabilities or use for quick development purposes.
 
-- Easy media management: Add, Delete or Update any media associated with your content. Receive media data in a web friendly way for easy image source display.
+- Easy media management: Add, Delete or Update any media associated with your content. Receive media data in a browser friendly format for easy image source display.
 
 - Control your meta data: Meta data each data point has meta data associated which can be in any shape. The user has complete control.
 
