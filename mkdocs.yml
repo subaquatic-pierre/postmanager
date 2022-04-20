@@ -24,10 +24,15 @@ nav:
 
   - Author's website: https://pierredutoit.me
 
+repo_url: https://github.com/subaquatic-pierre/postmanager
+repo_name: subaquatic-pierre/postmanager
+
 theme:
   name: material
   icon:
-    logo: material/currency-sign
+    logo: material/abacus
+    repo: fontawesome/brands/github
+    favicon: images/favicon.png
   features:
     - content.code.annotate
     - navigation.tabs
@@ -35,17 +40,17 @@ theme:
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: blue
+      primary: blue grey
       accent: teal
       toggle:
-        icon: material/weather-sunny
+        icon: material/brightness-4
         name: Switch to dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
       primary: black
       accent: lime
       toggle:
-        icon: material/weather-night
+        icon: material/brightness-7
         name: Switch to light mode
 
 extra_css:
