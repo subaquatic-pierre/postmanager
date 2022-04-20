@@ -80,18 +80,29 @@ content = {
     "blocks":[
         {"Header"}:"Cool Blog"
     ],
+    ...
+    ...
 }
 
-new_blog = blog_manager(meta_data,content)
+new_blog = blog_manager.new_post(meta_data,content)
 
-post_manager.save(new_blog)
+post_manager.save_post(new_blog)
+```
+
+### Get
+
+```
+blog_id = 42
+bog = blog_manager.get_by_id(blog_id)
+
+return blog.to_json()
 ```
 
 ### Delete
 
 ```
 blog_id = 42
-blog_manager.delete(blog_id)
+blog_manager.delete_post(blog_id)
 ```
 
 ### Add Media
@@ -106,10 +117,17 @@ blog_id = 42
 blog = blog_manager.get_by_id(blog_id)
 
 blog.add_media(media["name"],media["bytes"])
-blog_manager.save(blog)
+blog_manager.save_post(blog)
 ```
 
 ## Examples
 
 - [Simple Flask](https://github.com/subaquatic-pierre/postmanager-flask-example)
 - [Flask GraphQL React](https://github.com/subaquatic-pierre/postmanager-flask-example)
+
+## References
+
+- [AWS CLI Installation](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+- [AWS CLI Configuration](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html)
+- [Media Format](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs)
+- [FileReader](https://developer.mozilla.org/en-US/docs/Web/API/FileReader/readAsDataURL)
