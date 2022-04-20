@@ -81,6 +81,7 @@ plugins:
 
       watch:
         - src/postmanager
+        - ./README.md
 
 extra:
   generator: false

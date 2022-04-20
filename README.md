@@ -15,13 +15,13 @@ Content manager for all types of content, blog posts, galleries, personal record
 
 ## Features
 
-- AWS S3 Storage: This means you can store your content directly to the cloud with very little configuration out of the box.
+- AWS S3 storage: This means you can store your content directly to the cloud with very little configuration out of the box.
 
-- Local Storage: Store all your content on your local system, skip cloud vulnerabilities or use for quick development purposes.
+- Local storage: Store all your content on your local system, skip cloud vulnerabilities or use for quick development purposes.
 
-- Easy Media Management: Add, Delete or Update any media associated with your content. Receive media data in a web friendly way for easy image source display.
+- Easy media management: Add, Delete or Update any media associated with your content. Receive media data in a web friendly way for easy image source display.
 
-- Control Your Meta Data: Meta data each data point has meta data associated which can be in any shape. The user has complete control.
+- Control your meta data: Meta data each data point has meta data associated which can be in any shape. The user has complete control.
 
 ## Requirements
 
@@ -70,7 +70,7 @@ blog_manager = PostManager.setup_local()
 
 ### Create
 
-```
+```python
 meta_data = {
     "title": "Cool Blog",
     "author": "Jeff"
@@ -91,7 +91,7 @@ post_manager.save_post(new_blog)
 
 ### Get
 
-```
+```python
 blog_id = 42
 bog = blog_manager.get_by_id(blog_id)
 
@@ -100,17 +100,20 @@ return blog.to_json()
 
 ### Delete
 
-```
+```python
 blog_id = 42
 blog_manager.delete_post(blog_id)
 ```
 
 ### Add Media
 
-```
+!!! note "Note: Media format"
+The `add_media` takes the media bytes in DataUrl format. This is the same as the value returned from JavaScript [FileReader.readAsDataURL()](https://developer.mozilla.org/en-US/docs/Web/API/FileReader/readAsDataURL).
+
+```python
 media = {
     "name":"cover_photo",
-    "bytes": "data:image/url;base64,iV99JKH...."
+    "bytes": "data:image/jpeg;base64,iV99JKH...."
 }
 
 blog_id = 42
