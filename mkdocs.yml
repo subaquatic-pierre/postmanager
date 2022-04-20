@@ -7,7 +7,6 @@ nav:
       - Contributing: contributing.md
       - License: license.md
       - Code of Conduct: code_of_conduct.md
-      - Coverage report: coverage.md
       - Changelog: changelog.md
 
   - Usage:
@@ -70,7 +69,6 @@ markdown_extensions:
 
 plugins:
   - search
-  - coverage
   - mkdocstrings:
       handlers:
         python:
