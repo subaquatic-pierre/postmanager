@@ -27,10 +27,8 @@ class Post(StorageAdapter):
     ) -> None:
         """
         Args:
-            storage_proxy (StorageProxy): Storage proxy used
-             to communicate with storage system.
-            meta_data (dict): MetaData object associated with this post.
-            content (dict, optional): JSON parsable object or string.
+            storage_proxy (StorageProxy): Storage proxy used to communicate with storage system.
+            meta_data (dict): MetaData object associated with this post. content (dict, optional): JSON parsable object or string.
         """
         super().__init__(storage_proxy)
 

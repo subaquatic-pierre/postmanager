@@ -51,6 +51,10 @@ def list_post():
 
 ## Create Post
 
+!!! Media format is DataUrl as returned from
+JavaScript FileReader.readAsDataURL()() method
+[reference](https://developer.mozilla.org/en-US/docs/Web/API/FileReader/readAsDataURL)
+
 ```python title="routes.py"
 
 @app.route("/post", methods=["GET","POST"])
