@@ -29,10 +29,10 @@ repo_name: subaquatic-pierre/postmanager
 
 theme:
   name: material
+  favicon: images/favicon.png
   icon:
     logo: material/abacus
     repo: fontawesome/brands/github
-    favicon: images/favicon.png
   features:
     - content.code.annotate
     - navigation.tabs
