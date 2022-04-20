@@ -370,13 +370,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#tasks" class="md-nav__link">
-    Tasks
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#development" class="md-nav__link">
     Development
   </a>
@@ -428,20 +421,6 @@
     <li class="md-nav__item">
       <a href="../code_of_conduct/" class="md-nav__link">
         Code of Conduct
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../coverage/" class="md-nav__link">
-        Coverage report
       </a>
     </li>
   
@@ -711,13 +690,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#tasks" class="md-nav__link">
-    Tasks
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#development" class="md-nav__link">
     Development
   </a>
@@ -758,36 +730,9 @@ Every little bit helps, and credit will always be given.</p>
 <h2 id="environment-setup">Environment setup<a class="headerlink" href="#environment-setup" title="Permanent link">«</a></h2>
 <p>Nothing easier!</p>
 <p>Fork and clone the repository, then:</p>
-<div class="highlight"><pre><span></span><code><span class="nb">cd</span> mkdocstrings
-make setup
+<div class="highlight"><pre><span></span><code>pip install -r requirements_dev.txt
+pip install -e .
 </code></pre></div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>If it fails for some reason,
-you'll need to install
-<a href="https://github.com/pdm-project/pdm">PDM</a>
-manually.</p>
-<p>You can install it with:</p>
-<div class="highlight"><pre><span></span><code>python3 -m pip install --user pipx
-pipx install pdm
-</code></pre></div>
-<p>Now you can try running <code>make setup</code> again,
-or simply <code>pdm install</code>.</p>
-</div>
-<p>You now have the dependencies installed.</p>
-<p>Run <code>make help</code> to see all the available actions!</p>
-<h2 id="tasks">Tasks<a class="headerlink" href="#tasks" title="Permanent link">«</a></h2>
-<p>This project uses <a href="https://github.com/pawamoy/duty">duty</a> to run tasks.
-A Makefile is also provided. The Makefile will try to run certain tasks
-on multiple Python versions. If for some reason you don't want to run the task
-on multiple Python versions, you can do one of the following:</p>
-<ol>
-<li><code>export PYTHON_VERSIONS=</code>: this will run the task
-   with only the current Python version</li>
-<li>run the task directly with <code>pdm run duty TASK</code></li>
-</ol>
-<p>The Makefile detects if a virtual environment is activated,
-so <code>make</code> will work the same with the virtualenv activated or not.</p>
 <h2 id="development">Development<a class="headerlink" href="#development" title="Permanent link">«</a></h2>
 <p>As usual:</p>
 <ol>
@@ -796,14 +741,13 @@ so <code>make</code> will work the same with the virtualenv activated or not.</p
 </ol>
 <p><strong>Before committing:</strong></p>
 <ol>
-<li>run <code>make format</code> to auto-format the code</li>
-<li>run <code>make check</code> to check everything (fix any warning)</li>
-<li>run <code>make test</code> to run the tests (fix any issue)</li>
-<li>if you updated the documentation or the project dependencies:<ol>
-<li>run <code>make docs-serve</code></li>
+<li>run <code>mypy src</code> to check typings</li>
+<li>run <code>flake8 src</code> to check formatting (fix any warning)</li>
+<li>run <code>python -m pytest</code> to run the tests (fix any issue)</li>
+<li>if you updated the documentation or the project dependencies:</li>
+<li>run <code>pip install -r requirements_docs.txt</code> install doc dependencies</li>
+<li>run <code>mkdocs serve</code></li>
 <li>go to <a href="http://localhost:8000">http://localhost:8000</a> and check that everything looks good</li>
-</ol>
-</li>
 <li>follow our <a href="#commit-message-convention">commit message convention</a></li>
 </ol>
 <p>If you are unsure about how to fix or ignore a warning,
@@ -844,7 +788,7 @@ Fixes #15.
 git commit --fixup<span class="o">=</span>SHA
 </code></pre></div>
 <p>Once all the changes are approved, you can squash your commits:</p>
-<div class="highlight"><pre><span></span><code>git rebase -i --autosquash master
+<div class="highlight"><pre><span></span><code>git rebase -i --autosquash main
 </code></pre></div>
 <p>And force-push:</p>
 <div class="highlight"><pre><span></span><code>git push -f
