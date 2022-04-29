@@ -126,6 +126,7 @@ blog_manager.save_post(blog)
 ## Examples
 
 - [Simple Flask](https://github.com/subaquatic-pierre/postmanager-flask-example)
+- [GraphqL React Docker](https://github.com/subaquatic-pierre/postmanager-docker-example)
 
 ## References
 
