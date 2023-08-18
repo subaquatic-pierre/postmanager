@@ -22,7 +22,7 @@ nav:
       - StorageProxyS3: code/storage_proxy_s3.md
       - StorageAdapter: code/storage_adapter.md
 
-  - Author's website: https://pierredutoit.me
+  - Author's website: https://www.zeroisone.io
 
 repo_url: https://github.com/subaquatic-pierre/postmanager
 repo_name: subaquatic-pierre/postmanager

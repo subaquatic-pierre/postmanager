@@ -127,6 +127,26 @@ blog_manager.save_post(blog)
 
 - [Simple Flask](https://github.com/subaquatic-pierre/postmanager-flask-example)
 
+## Build docs
+
+1. Install deps
+
+```sh
+pip3 install -r requirements_docs.txt
+```
+
+2. Run Build
+
+```
+mkdocs build
+```
+
+3. Serve site directory
+
+```sh
+serve site
+```
+
 ## References
 
 - [AWS CLI Installation](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
