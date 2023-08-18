@@ -2,72 +2,72 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://postmanager.com/</loc>
-         <lastmod>2023-02-21</lastmod>
+         <lastmod>2023-08-18</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://postmanager.com/changelog/</loc>
-         <lastmod>2023-02-21</lastmod>
+         <lastmod>2023-08-18</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://postmanager.com/code_of_conduct/</loc>
-         <lastmod>2023-02-21</lastmod>
+         <lastmod>2023-08-18</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://postmanager.com/contributing/</loc>
-         <lastmod>2023-02-21</lastmod>
+         <lastmod>2023-08-18</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://postmanager.com/license/</loc>
-         <lastmod>2023-02-21</lastmod>
+         <lastmod>2023-08-18</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://postmanager.com/code/manager/</loc>
-         <lastmod>2023-02-21</lastmod>
+         <lastmod>2023-08-18</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://postmanager.com/code/media_data/</loc>
-         <lastmod>2023-02-21</lastmod>
+         <lastmod>2023-08-18</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://postmanager.com/code/meta_data/</loc>
-         <lastmod>2023-02-21</lastmod>
+         <lastmod>2023-08-18</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://postmanager.com/code/post/</loc>
-         <lastmod>2023-02-21</lastmod>
+         <lastmod>2023-08-18</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://postmanager.com/code/storage_adapter/</loc>
-         <lastmod>2023-02-21</lastmod>
+         <lastmod>2023-08-18</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://postmanager.com/code/storage_proxy_local/</loc>
-         <lastmod>2023-02-21</lastmod>
+         <lastmod>2023-08-18</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://postmanager.com/code/storage_proxy_s3/</loc>
-         <lastmod>2023-02-21</lastmod>
+         <lastmod>2023-08-18</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://postmanager.com/usage/configuration/</loc>
-         <lastmod>2023-02-21</lastmod>
+         <lastmod>2023-08-18</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://postmanager.com/usage/examples/</loc>
-         <lastmod>2023-02-21</lastmod>
+         <lastmod>2023-08-18</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>
