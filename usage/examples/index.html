@@ -8,10 +8,10 @@
       
       
       
-        <link rel="canonical" href="https://postmanager.com/usage/examples/">
+        <link rel="canonical" href="https://postmanager.stackgarden.dev/usage/examples/">
       
       <link rel="icon" href="../../images/favicon.png">
-      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-8.2.9">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-8.2.9">
     
     
       
@@ -819,8 +819,8 @@
 </tbody>
 </table>
 <h2 id="setup-and-imports">Setup and Imports<a class="headerlink" href="#setup-and-imports" title="Permanent link">«</a></h2>
-<div class="highlight"><span class="filename">routes.py</span><pre><span></span><code><span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">request</span><span class="p">,</span> <span class="n">jsonify</span><span class="p">,</span> <span class="n">Flask</span>
+<div class="highlight"><span class="filename">routes.py</span><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flask</span><span class="w"> </span><span class="kn">import</span> <span class="n">request</span><span class="p">,</span> <span class="n">jsonify</span><span class="p">,</span> <span class="n">Flask</span>
 
 <span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -829,7 +829,7 @@
 </code></pre></div>
 <h2 id="list-posts">List Posts<a class="headerlink" href="#list-posts" title="Permanent link">«</a></h2>
 <div class="highlight"><span class="filename">routes.py</span><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/post&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="s2">&quot;POST&quot;</span><span class="p">])</span>
-<span class="k">def</span> <span class="nf">list_post</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">list_post</span><span class="p">():</span>
     <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;GET&quot;</span><span class="p">:</span>
 
         <span class="c1"># Create empty list</span>
@@ -858,7 +858,7 @@
 <p>JavaScript FileReader.readAsDataURL()() method
 <a href="https://developer.mozilla.org/en-US/docs/Web/API/FileReader/readAsDataURL">reference</a></p>
 <div class="highlight"><span class="filename">routes.py</span><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/post&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span><span class="s2">&quot;POST&quot;</span><span class="p">])</span>
-<span class="k">def</span> <span class="nf">list_post</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">list_post</span><span class="p">():</span>
     <span class="o">...</span>
     <span class="c1"># other code</span>
     <span class="o">...</span>
@@ -889,7 +889,7 @@
 </code></pre></div>
 <h2 id="get-single-post">Get Single Post<a class="headerlink" href="#get-single-post" title="Permanent link">«</a></h2>
 <div class="highlight"><span class="filename">routes.py</span><pre><span></span><code><span class="nd">@main</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/post/&lt;string:post_id&gt;&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="s2">&quot;PUT&quot;</span><span class="p">,</span> <span class="s2">&quot;DELETE&quot;</span><span class="p">])</span>
-<span class="k">def</span> <span class="nf">single_post</span><span class="p">(</span><span class="n">post_id</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">single_post</span><span class="p">(</span><span class="n">post_id</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;GET&quot;</span><span class="p">:</span>
         <span class="c1"># Get post from storage</span>
         <span class="n">post</span> <span class="o">=</span> <span class="n">post_manager</span><span class="o">.</span><span class="n">get_by_id</span><span class="p">(</span><span class="n">post_id</span><span class="p">)</span>
@@ -899,7 +899,7 @@
 </code></pre></div>
 <h2 id="update-post">Update Post<a class="headerlink" href="#update-post" title="Permanent link">«</a></h2>
 <div class="highlight"><span class="filename">routes.py</span><pre><span></span><code><span class="nd">@main</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/post/&lt;string:post_id&gt;&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="s2">&quot;PUT&quot;</span><span class="p">,</span> <span class="s2">&quot;DELETE&quot;</span><span class="p">])</span>
-<span class="k">def</span> <span class="nf">single_post</span><span class="p">(</span><span class="n">post_id</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">single_post</span><span class="p">(</span><span class="n">post_id</span><span class="p">):</span>
     <span class="o">...</span>
     <span class="c1"># other code</span>
     <span class="o">...</span>
@@ -935,7 +935,7 @@
 </code></pre></div>
 <h2 id="delete-post">Delete Post<a class="headerlink" href="#delete-post" title="Permanent link">«</a></h2>
 <div class="highlight"><span class="filename">routes.py</span><pre><span></span><code><span class="nd">@main</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/post/&lt;string:post_id&gt;&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="s2">&quot;PUT&quot;</span><span class="p">,</span> <span class="s2">&quot;DELETE&quot;</span><span class="p">])</span>
-<span class="k">def</span> <span class="nf">single_post</span><span class="p">(</span><span class="n">post_id</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">single_post</span><span class="p">(</span><span class="n">post_id</span><span class="p">):</span>
     <span class="o">...</span>
     <span class="c1"># other code</span>
     <span class="o">...</span>
